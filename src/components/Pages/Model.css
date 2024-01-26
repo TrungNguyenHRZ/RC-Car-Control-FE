@@ -1,0 +1,25 @@
+.table-match-container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  height: 560px;
+  justify-content: space-between;
+}
+
+.table-match {
+  border-collapse: collapse;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  /* background-color: #d5cbff; */
+  border: 1px solid;
+  padding: 10px;
+  box-shadow: 5px 10px 18px #888888;
+}
+.tbody-match-tr {
+  text-align: center;
+}
+.tbody-match-td {
+  border: 10%;
+  border-color: blue;
+}
