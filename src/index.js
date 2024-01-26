@@ -4,9 +4,9 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import Model from "./components/Pages/Model";
 import Main from "./components/Main";
 import Charts from "./components/Charts/Charts";
+import MatchInfo from "./components/Pages/MatchInfo";
 
 const router = createBrowserRouter([
   {
@@ -19,7 +19,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/pages",
-        element: <Model />,
+        element: <MatchInfo />,
       },
       {
         path: "/charts",
