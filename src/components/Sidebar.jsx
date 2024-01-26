@@ -1,6 +1,7 @@
 import React from "react";
 import {
   FaBolt,
+  FaCarSide,
   FaChartBar,
   FaChevronLeft,
   FaChevronRight,
@@ -37,9 +38,9 @@ const Sidebar = () => {
         <Link to={"pages"}>
           <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
             <div className="flex items-center gap-[10px]">
-              <FaStickyNote color="#fff" />
+              <FaCarSide color="#fff" />
               <p className="text-[14px] leading-[20px] font-normal text-white">
-                Pages
+                Match Information
               </p>
             </div>
             <FaChevronRight color="#fff" />

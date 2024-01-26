@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import PieComponent from "./Pie/PieComponent";
 import { Progress } from "antd";
+import { Box, CircularProgress } from "@mui/material";
 
 const Main = () => {
   const data = [
@@ -189,12 +190,14 @@ const Main = () => {
         <div className="basis-[45%] border bg-white shadow-md cursor-pointer rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
             <h2 className="text-[#4e73df] text-[16px] leading-[19px] font-bold">
-              Resources
+              Coming Soon...
             </h2>
             <FaEllipsisV color="gray" className="cursor-pointer" />
           </div>
-          <div className="pl-[35px] flex items-center justify-center h-[100%]">
-            <img src="" alt="" />
+          <div className="pl-[35px] flex flex-col items-center justify-center h-[100%]">
+            <Box className="flex">
+              <CircularProgress />
+            </Box>
             <p className="mt-[15px] font-semibold text-gray-500">
               No data available
             </p>
