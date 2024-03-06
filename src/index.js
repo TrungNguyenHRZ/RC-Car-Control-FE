@@ -7,8 +7,13 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Main from "./components/Main";
 import Charts from "./components/Charts/Charts";
 import MatchInfo from "./components/Pages/MatchInfo";
+import LoginPage from "./components/Login/LoginPage";
 
 const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
   {
     path: "/",
     element: <App />,
@@ -17,6 +22,7 @@ const router = createBrowserRouter([
         path: "/",
         element: <Main />,
       },
+
       {
         path: "/pages",
         element: <MatchInfo />,

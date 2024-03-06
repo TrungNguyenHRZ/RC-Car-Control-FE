@@ -1,14 +1,26 @@
 import React from "react";
 import { FaEllipsisV, FaRegCalendarMinus } from "react-icons/fa";
+// import {
+//   LineChart,
+//   Line,
+//   XAxis,
+//   YAxis,
+//   CartesianGrid,
+//   Tooltip,
+//   Legend,
+// } from "recharts";
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
+  Rectangle,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
+  ResponsiveContainer,
 } from "recharts";
+
 import PieComponent from "./Pie/PieComponent";
 import { Progress } from "antd";
 import { Box, CircularProgress } from "@mui/material";
@@ -16,46 +28,34 @@ import { Box, CircularProgress } from "@mui/material";
 const Main = () => {
   const data = [
     {
-      name: "Page A",
-      uv: 4000,
-      pv: 2400,
-      amt: 2400,
+      year: "2020",
+      Member: 500,
+      Mentor: 150,
+      Team: 100,
     },
     {
-      name: "Page B",
-      uv: 3000,
-      pv: 1398,
-      amt: 2210,
+      year: "2021",
+      Member: 300,
+      Mentor: 60,
+      Team: 43,
     },
     {
-      name: "Page C",
-      uv: 2000,
-      pv: 9800,
-      amt: 2290,
+      year: "2022",
+      Member: 860,
+      Mentor: 172,
+      Team: 148,
     },
     {
-      name: "Page D",
-      uv: 2780,
-      pv: 3908,
-      amt: 2000,
+      year: "2023",
+      Member: 798,
+      Mentor: 160,
+      Team: 159,
     },
     {
-      name: "Page E",
-      uv: 1890,
-      pv: 4800,
-      amt: 2181,
-    },
-    {
-      name: "Page F",
-      uv: 2390,
-      pv: 3800,
-      amt: 2500,
-    },
-    {
-      name: "Page G",
-      uv: 3490,
-      pv: 4300,
-      amt: 2100,
+      year: "2024",
+      Member: 1235,
+      Mentor: 247,
+      Team: 240,
     },
   ];
   return (
@@ -72,10 +72,10 @@ const Main = () => {
         <div className="h-[100px] rounded-[8px] bg-white border-l-[4px] border-[#4e73df] px-[30px] flex items-center justify-between cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out">
           <div>
             <h2 className="text-[#B589DF] text-[11px] leading-[17px] font-bold">
-              EARNINGS (MONTHLY)
+              TEAM (2023-2024)
             </h2>
             <h1 className="text-[20px] leading-[24px] font-bold text-[#5a5c69] mt-[5px]">
-              $40,000
+              399
             </h1>
           </div>
           <FaRegCalendarMinus fontSize={28} color="" />
@@ -83,10 +83,10 @@ const Main = () => {
         <div className="h-[100px] rounded-[8px] bg-white border-l-[4px] border-[#1cc88a] px-[30px] flex items-center justify-between cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out">
           <div>
             <h2 className="text-[#1cc88a] text-[11px] leading-[17px] font-bold">
-              EARNINGS (ANNUAL)
+              MEMBER (2023-2024)
             </h2>
             <h1 className="text-[20px] leading-[24px] font-bold text-[#5a5c69] mt-[5px]">
-              $240,000
+              2,033
             </h1>
           </div>
           <FaRegCalendarMinus fontSize={28} color="" />
@@ -121,31 +121,41 @@ const Main = () => {
             <h2>Earning Overview</h2>
             <FaEllipsisV color="gray" className="cursor-pointer" />
           </div>
-          <div>
-            <LineChart
-              width={1100}
-              height={500}
-              data={data}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="pv"
-                stroke="#8884d8"
-                activeDot={{ r: 8 }}
-              />
-              <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-            </LineChart>
+          <div style={{ height: "85%", width: "100%" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                width={500}
+                height={300}
+                data={data}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="year" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar
+                  dataKey="Member"
+                  fill="#8884d8"
+                  activeBar={<Rectangle fill="pink" stroke="blue" />}
+                />
+                <Bar
+                  dataKey="Mentor"
+                  fill="#82ca9d"
+                  activeBar={<Rectangle fill="gold" stroke="purple" />}
+                />
+                <Bar
+                  dataKey="Team"
+                  fill="yellow"
+                  activeBar={<Rectangle fill="gold" stroke="purple" />}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
         <div className="basis-[30%] border bg-white shadow-md cursor-pointer rounded-[4px]">
