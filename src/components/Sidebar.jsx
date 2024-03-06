@@ -35,12 +35,12 @@ const Sidebar = () => {
         <p className="text-[10px] font-extrabold leading-[16px] text-white/[0.4]">
           INTERFACE
         </p>
-        <Link to={"pages"}>
+        <Link to={"statistics"}>
           <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
             <div className="flex items-center gap-[10px]">
               <FaCarSide color="#fff" />
               <p className="text-[14px] leading-[20px] font-normal text-white">
-                Match Information
+                Statistics
               </p>
             </div>
             <FaChevronRight color="#fff" />

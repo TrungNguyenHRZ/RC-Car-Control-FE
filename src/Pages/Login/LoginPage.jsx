@@ -1,5 +1,6 @@
 import React from "react";
 import Rccar from "../../assets/rccar.jpg";
+import LogoF from "../../assets/logoF.png";
 
 const LoginPage = () => {
   return (
@@ -11,8 +12,11 @@ const LoginPage = () => {
       />
       <div className="flex relative z-10">
         <div className="flex-1"></div>
-        <div className="bg-gray-100 bg-opacity-80  flex justify-center items-center h-screen flex-2">
+        <div className="bg-gray-100 bg-opacity-80  flex-row justify-between items-center h-screen flex-2">
           {/* Right: Login Form */}
+          <div className="flex-1  flex items-center justify-center pt-[25px]">
+            <img className="w-[180px]" src={LogoF} alt="" />
+          </div>
           <div className="lg:p-36 md:p-52 sm:p-20 p-8 w-full lg:w-30">
             <h1 className="flex justify-center text-2xl font-semibold mb-4">
               Welcome to RC Car Competition
@@ -74,6 +78,9 @@ const LoginPage = () => {
                 Sign up Here
               </a>
             </div>
+          </div>
+          <div className="flex flex-1 justify-center items-end h-[100px]">
+            <p>Copyright&copy; 2024 RC Car Competition </p>
           </div>
         </div>
       </div>

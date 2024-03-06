@@ -6,8 +6,8 @@ import reportWebVitals from "./reportWebVitals";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Main from "./components/Main";
 import Charts from "./components/Charts/Charts";
-import MatchInfo from "./components/Pages/MatchInfo";
-import LoginPage from "./components/Login/LoginPage";
+import LoginPage from "./Pages/Login/LoginPage";
+import Statistics from "./Pages/Statistics/Statistics";
 
 const router = createBrowserRouter([
   {
@@ -24,8 +24,8 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "/pages",
-        element: <MatchInfo />,
+        path: "/statistics",
+        element: <Statistics />,
       },
       {
         path: "/charts",
