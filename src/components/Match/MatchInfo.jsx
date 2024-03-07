@@ -44,10 +44,23 @@ const MatchInfo = () => {
   );
 
   const totalPages = Math.ceil(listMatch.length / itemPerPage);
+
   const formattedDateTime =
     selectedMatch && selectedMatch.startTime
       ? moment(selectedMatch.startTime).format("YYYY-MM-DDTHH:mm")
       : "";
+
+  const handleChangeInput = (e) => {
+    setSelectedMatch({
+      ...selectedMatch,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsEditing(false);
+  };
   return (
     <div className="pt-[25px] px-[25px] bg-[#F9F8FC]">
       <div className="flex mt-[22px] w-full gap-[30px]">
@@ -131,118 +144,132 @@ const MatchInfo = () => {
               <CircularProgress />
             </Box> */}
 
-            <form className="w-full pl-[15px] pt-[15px] pr-[15px] pb-[3px]">
-              <div class="grid gap-6 mb-6 md:grid-cols-2">
+            <form
+              className="w-full pl-[15px] pt-[15px] pr-[15px] pb-[3px]"
+              onSubmit={handleSubmit}
+            >
+              <div className="grid gap-6 mb-6 md:grid-cols-2">
                 <div>
                   <label
                     for="match_id"
-                    class="block mb-2 text-sm font-medium text-gray-900 "
+                    className="block mb-2 text-sm font-medium text-gray-900 "
                   >
                     Match ID
                   </label>
                   <input
                     type="text"
                     id="match_id"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                    name="id"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
                     value={selectedMatch ? selectedMatch.id : ""}
-                    disabled={!isEditing}
+                    disabled
                   />
                 </div>
                 <div>
                   <label
                     for="bracket_id"
-                    class="block mb-2 text-sm font-medium text-gray-900 "
+                    className="block mb-2 text-sm font-medium text-gray-900 "
                   >
                     Bracket ID
                   </label>
                   <input
                     type="text"
                     id="bracket_id"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                    name="bracketId"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
                     value={selectedMatch ? selectedMatch.bracketId : ""}
                     disabled={!isEditing}
+                    onChange={handleChangeInput}
                   />
                 </div>
                 <div>
                   <label
                     for="match_name"
-                    class="block mb-2 text-sm font-medium text-gray-900 "
+                    className="block mb-2 text-sm font-medium text-gray-900 "
                   >
                     Match name
                   </label>
                   <input
                     type="text"
                     id="match_name"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                    name="name"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
                     value={selectedMatch ? selectedMatch.name : ""}
                     disabled={!isEditing}
+                    onChange={handleChangeInput}
                   />
                 </div>
                 <div>
                   <label
                     for="time"
-                    class="block mb-2 text-sm font-medium text-gray-900 "
+                    className="block mb-2 text-sm font-medium text-gray-900 "
                   >
                     Time
                   </label>
                   <input
                     type="datetime-local"
                     id="time"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                    name="startTime"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
                     value={formattedDateTime}
                     disabled={!isEditing}
+                    onChange={handleChangeInput}
                   />
                 </div>
                 <div>
                   <label
                     for="lap"
-                    class="block mb-2 text-sm font-medium text-gray-900 "
+                    className="block mb-2 text-sm font-medium text-gray-900 "
                   >
                     Number of lap
                   </label>
                   <input
                     type="number"
                     id="lap"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                    name="lap"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder="0"
                     required
                     value={selectedMatch ? selectedMatch.lap : ""}
                     disabled={!isEditing}
+                    onChange={handleChangeInput}
                   />
                 </div>
                 <div>
                   <label
                     for="location"
-                    class="block mb-2 text-sm font-medium text-gray-900 "
+                    className="block mb-2 text-sm font-medium text-gray-900 "
                   >
                     Location
                   </label>
                   <input
                     type="text"
                     id="location"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                    name="place"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
                     value={selectedMatch ? selectedMatch.place : ""}
                     disabled={!isEditing}
+                    onChange={handleChangeInput}
                   />
                 </div>
               </div>
-              <div>
+              <div className="flex justify-end">
                 {isEditing ? (
                   <button
                     type="submit"
-                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  "
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  "
                   >
-                    Submit
+                    Update
                   </button>
                 ) : (
                   ""
@@ -254,7 +281,7 @@ const MatchInfo = () => {
                 <button
                   onClick={handleEditToggle}
                   type="submit"
-                  class="text-white bg-orange-700 hover:bg-orange-800 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"
+                  className="text-white bg-orange-700 hover:bg-orange-800 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"
                 >
                   Edit
                 </button>
