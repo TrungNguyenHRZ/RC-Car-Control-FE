@@ -3,14 +3,27 @@ import apiMatchInstance from "../../service/api-match";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import { FaEllipsisV } from "react-icons/fa";
+import { FaCirclePlus } from "react-icons/fa6";
 import moment from "moment";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
+import { Button } from "antd";
 
 const MatchInfo = () => {
   const [listMatch, setListMatch] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [openDelete, setOpenDelete] = React.useState(false);
+  const [openAdding, setOpenAdding] = React.useState(false);
   const itemPerPage = 5;
 
   useEffect(() => {
@@ -32,11 +45,16 @@ const MatchInfo = () => {
     setIsEditing(!isEditing);
   };
 
+  const handleAddToggle = () => {
+    setIsAdding(!isAdding);
+  };
+
   const handlePageChange = (event, newPage) => {
     setCurrentPage(newPage);
   };
   const handleDeleteItem = () => {
     console.log("Delete item");
+    setOpenDelete(true);
   };
   const renderedData = listMatch.slice(
     (currentPage - 1) * itemPerPage,
@@ -61,12 +79,28 @@ const MatchInfo = () => {
     e.preventDefault();
     setIsEditing(false);
   };
+
+  const handleClose = () => {
+    setOpenDelete(false);
+  };
+  const handleClickOpenAdding = () => {
+    setOpenAdding(true);
+  };
+
+  const handleCloseAdding = () => {
+    setOpenAdding(false);
+  };
   return (
     <div className="pt-[25px] px-[25px] bg-[#F9F8FC]">
       <div className="flex mt-[22px] w-full gap-[30px]">
         <div className="basis-[70%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
             <h>Match</h>
+            <FaCirclePlus
+              color="green"
+              className="cursor-pointer"
+              onClick={handleClickOpenAdding}
+            />
           </div>
           <div className="relative overflow-x-auto shadow-md h-[400px]">
             <table className="w-full text-sm text-left rtl:text-right text-gray-500 ">
@@ -140,10 +174,6 @@ const MatchInfo = () => {
             <FaEllipsisV color="gray" className="cursor-pointer" />
           </div>
           <div className="flex flex-col">
-            {/* <Box className="flex">
-              <CircularProgress />
-            </Box> */}
-
             <form
               className="w-full pl-[15px] pt-[15px] pr-[15px] pb-[3px]"
               onSubmit={handleSubmit}
@@ -274,10 +304,20 @@ const MatchInfo = () => {
                 ) : (
                   ""
                 )}
+                {isAdding ? (
+                  <button
+                    type="submit"
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  "
+                  >
+                    Submit
+                  </button>
+                ) : (
+                  ""
+                )}
               </div>
             </form>
-            <div className="flex pl-[15px] pb-[15px] pr-[15px]">
-              {!isEditing ? (
+            <div className="flex justify-between pl-[15px] pb-[15px] pr-[15px]">
+              {!isEditing || isAdding ? (
                 <button
                   onClick={handleEditToggle}
                   type="submit"
@@ -288,10 +328,133 @@ const MatchInfo = () => {
               ) : (
                 ""
               )}
+              {isAdding ? (
+                <button
+                  onClick={handleAddToggle}
+                  type="submit"
+                  className="text-white bg-orange-700 hover:bg-orange-800 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"
+                >
+                  Add
+                </button>
+              ) : (
+                ""
+              )}
             </div>
           </div>
         </div>
       </div>
+      <Dialog
+        open={openDelete}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {`Are you sure you want to delete?`}
+        </DialogTitle>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleClose} autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <React.Fragment>
+        <Dialog
+          open={openAdding}
+          onClose={handleCloseAdding}
+          PaperProps={{
+            component: "form",
+            onSubmit: (event) => {
+              event.preventDefault();
+              const formData = new FormData(event.currentTarget);
+              const formJson = Object.fromEntries(formData.entries());
+              const email = formJson.email;
+              console.log(email);
+              handleCloseAdding();
+            },
+          }}
+        >
+          <DialogTitle>Add new match</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Please enter all data fields to add a new match. This is required.
+            </DialogContentText>
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="id"
+              name="id"
+              label="ID"
+              type="number"
+              fullWidth
+              variant="standard"
+            />
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="bracketId"
+              name="bracketId"
+              label="Bracket ID"
+              type="number"
+              fullWidth
+              variant="standard"
+            />
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="name"
+              name="name"
+              label="Match Name"
+              type="email"
+              fullWidth
+              variant="standard"
+            />
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="startTime"
+              name="startTime"
+              label=""
+              type="datetime-local"
+              fullWidth
+              variant="standard"
+            />
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="lap"
+              name="lap"
+              label="Number of lap"
+              type="number"
+              fullWidth
+              variant="standard"
+            />
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="place"
+              name="place"
+              label="Location"
+              type="text"
+              fullWidth
+              variant="standard"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseAdding}>Cancel</Button>
+            <Button variant="contained" type="submit">
+              Add
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </React.Fragment>
     </div>
   );
 };
