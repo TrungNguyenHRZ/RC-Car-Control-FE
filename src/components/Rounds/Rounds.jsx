@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import apiMatchInstance from "../../service/api-match";
+import apiRoundInstance from "../../service/api-round";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import { FaEllipsisV } from "react-icons/fa";
 import { FaCirclePlus } from "react-icons/fa6";
-import moment from "moment";
+
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { FaEnvelope, FaRegBell, FaSearch } from "react-icons/fa";
 import {
@@ -17,39 +17,71 @@ import {
 } from "@mui/material";
 import { Button } from "antd";
 
-const MatchInfo = () => {
-  const [listMatch, setListMatch] = useState([]);
+const Rounds = () => {
+  const [newRound, setNewRound] = useState(null);
+  const [listRound, setListRound] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [newMatch, setNewMatch] = useState(null);
+  const [selectedRound, setSelectedRound] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [openDelete, setOpenDelete] = React.useState(false);
   const [openAdding, setOpenAdding] = React.useState(false);
   const itemPerPage = 6;
+  const [totalPages, setTotalPage] = useState(5);
   const [valueSearch, setValueSearch] = useState("");
 
   useEffect(() => {
-    apiMatchInstance
-      .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+    apiRoundInstance
+      .get("/rounds?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
-        setListMatch(response.data.data);
-
-        //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+        setListRound(response.data.data);
       })
       .catch((error) => {
         console.error(error);
       });
   }, []);
-
-  const handleRowClick = (match) => {
-    setSelectedMatch(match);
+  const handleRowClick = (Round) => {
+    setSelectedRound(Round);
     setIsEditing(false);
   };
   const handleEditToggle = () => {
-    if (selectedMatch != null) {
+    if (selectedRound != null) {
       setIsEditing(!isEditing);
     }
+  };
+
+  const handleAddInput = (e) => {
+    setNewRound({
+      ...newRound,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleAddingNew = (e) => {
+    e.preventDefault();
+
+    apiRoundInstance
+      .post("/round", {
+        name: newRound.name,
+        map: newRound.map,
+        competitionId: newRound.competitionId,
+        status: "ACTIVE",
+      })
+      .then((response) => {
+        setOpenAdding(false);
+        setNewRound(null);
+        apiRoundInstance
+          .get("/rounds?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListRound(response.data.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const handleAddToggle = () => {
@@ -58,11 +90,11 @@ const MatchInfo = () => {
 
   const handlePageChange = async (event, newPage) => {
     setCurrentPage(newPage);
-
-    await apiMatchInstance
-      .get("/matches?page=" + (newPage - 1) + "&size=" + itemPerPage)
+    await apiRoundInstance
+      .get("/rounds?page=" + (newPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
-        setListMatch(response.data.data);
+        console.log(response.data.data);
+        setListRound(response.data.data);
 
         //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
       })
@@ -74,29 +106,10 @@ const MatchInfo = () => {
     console.log("Delete item");
     setOpenDelete(true);
   };
-  const renderedData = listMatch;
 
-  const [totalPages, setTotalPage] = useState(5);
-
-  const formattedDateTime =
-    selectedMatch && selectedMatch.startTime
-      ? moment(selectedMatch.startTime).format("YYYY-MM-DDTHH:mm")
-      : "";
-
-  const formattedDateTimeForAdd =
-    newMatch && newMatch.startTime
-      ? moment(newMatch.startTime).format("YYYY-MM-DDTHH:mm")
-      : "";
   const handleChangeInput = (e) => {
-    setSelectedMatch({
-      ...selectedMatch,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleAddInput = (e) => {
-    setNewMatch({
-      ...newMatch,
+    setSelectedRound({
+      ...selectedRound,
       [e.target.name]: e.target.value,
     });
   };
@@ -105,93 +118,55 @@ const MatchInfo = () => {
     e.preventDefault();
     setIsEditing(false);
 
-    console.log(selectedMatch);
-
-    if (selectedMatch.bracket.id) {
-      apiMatchInstance
-        .put("/match/" + selectedMatch.id, {
-          name: selectedMatch.name,
-          startTime: selectedMatch.startTime,
-          place: selectedMatch.place,
-          lap: selectedMatch.lap,
-          bracketId: selectedMatch.bracket.id,
+    if (selectedRound.competition.id) {
+      apiRoundInstance
+        .put("/round/" + selectedRound.id, {
+          name: selectedRound.name,
+          map: selectedRound.map,
+          competitionId: selectedRound.competition.id,
           status: "ACTIVE",
         })
         .then((response) => {
           console.log(response.data);
-          apiMatchInstance
-            .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          apiRoundInstance
+            .get("/rounds?page=" + (currentPage - 1) + "&size=" + itemPerPage)
             .then((response) => {
-              setListMatch(response.data.data);
+              setListRound(response.data.data);
 
               //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
             })
             .catch((error) => {
               console.error(error);
             });
-        }, [])
+        })
         .catch((error) => {
           console.error(error);
         });
     } else {
-      apiMatchInstance
-        .put("/match/" + selectedMatch.id, {
-          name: selectedMatch.name,
-          startTime: selectedMatch.startTime,
-          place: selectedMatch.place,
-          lap: selectedMatch.lap,
-          bracketId: selectedMatch.bracket,
+      apiRoundInstance
+        .put("/round/" + selectedRound.id, {
+          name: selectedRound.name,
+          map: selectedRound.map,
+          competitionId: selectedRound.competition,
           status: "ACTIVE",
         })
         .then((response) => {
           console.log(response.data);
-          apiMatchInstance
-            .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          apiRoundInstance
+            .get("/rounds?page=" + (currentPage - 1) + "&size=" + itemPerPage)
             .then((response) => {
-              setListMatch(response.data.data);
+              setListRound(response.data.data);
 
               //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
             })
             .catch((error) => {
               console.error(error);
             });
-        }, [])
+        })
         .catch((error) => {
           console.error(error);
         });
     }
-  };
-
-  const handleAddingNew = (e) => {
-    e.preventDefault();
-
-    console.log(newMatch);
-    apiMatchInstance
-      .post("/match", {
-        name: newMatch.name,
-        startTime: newMatch.startTime,
-        place: newMatch.place,
-        lap: newMatch.lap,
-        bracketId: newMatch.bracketId,
-        status: "ACTIVE",
-      })
-      .then((response) => {
-        setOpenAdding(false);
-        setNewMatch(null);
-        apiMatchInstance
-          .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
-          .then((response) => {
-            setListMatch(response.data.data);
-
-            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
   };
 
   const handleClose = () => {
@@ -204,32 +179,30 @@ const MatchInfo = () => {
   const handleCloseAdding = () => {
     setOpenAdding(false);
   };
-
   const handleInput = (e) => {
     setValueSearch(e.target.value);
   };
 
   const handleSearch = () => {
     if (valueSearch == "") {
-      apiMatchInstance
-        .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+      apiRoundInstance
+        .get("/rounds?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
-          setListMatch(response.data.data);
+          setListRound(response.data.data);
           setTotalPage(5);
-          //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
         })
         .catch((error) => {
           console.error(error);
         });
     } else {
-      apiMatchInstance
+      apiRoundInstance
         .get("/getByName?name=" + valueSearch)
         .then((response) => {
-          setListMatch(response.data.data.Matches);
+          setListRound(response.data.data.Rounds);
           setTotalPage(1);
         })
         .catch((error) => {
-          setListMatch([]);
+          setListRound([]);
           setTotalPage(0);
         });
     }
@@ -257,7 +230,7 @@ const MatchInfo = () => {
       <div className="flex mt-[22px] w-full gap-[30px]">
         <div className="basis-[70%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
-            <h>Match</h>
+            <h>Rounds</h>
             <FaCirclePlus
               color="green"
               className="cursor-pointer"
@@ -272,43 +245,35 @@ const MatchInfo = () => {
                     ID
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Match
+                    Name
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Bracket
+                    Map
                   </th>
-
                   <th scope="col" className="px-6 py-3">
                     Competition
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Start Time
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Address
+                    Competition Place
                   </th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {listMatch.length !== 0 ? (
-                  renderedData.map((item, index) => (
+                {listRound.length !== 0 ? (
+                  listRound.map((item, index) => (
                     <tr
                       key={item.id}
                       className="odd:bg-white  even:bg-gray-200  border-b cursor-pointer transition delay-50 hover:bg-[#668bfac9] hover:text-white"
                       onClick={() => handleRowClick(item)}
                     >
-                      <td className="px-6 py-4 font-medium  whitespace-nowrap ">
-                        {item.id}
-                      </td>
+                      <td className="px-6 py-4">{item.id}</td>
                       <td className="px-6 py-4">{item.name}</td>
-                      <td className="px-6 py-4">{item.bracket.name}</td>
+                      <td className="px-6 py-4">{item.map}</td>
+                      <td className="px-6 py-4">{item.competition.name}</td>
                       <td className="px-6 py-4">
-                        {item.bracket.round.competition.name}
+                        {item.competition.holdPlace}
                       </td>
-
-                      <td className="px-6 py-4">{item.startTime}</td>
-                      <td className="px-6 py-4">{item.place}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"
@@ -340,7 +305,7 @@ const MatchInfo = () => {
         </div>
         <div className="basis-[30%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
-            <h2>Match Detail</h2>
+            <h2>Round Detail</h2>
             <FaEllipsisV color="gray" className="cursor-pointer" />
           </div>
           <div className="flex flex-col">
@@ -354,7 +319,7 @@ const MatchInfo = () => {
                     for="match_id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Match ID
+                    Round ID
                   </label>
                   <input
                     type="text"
@@ -363,7 +328,7 @@ const MatchInfo = () => {
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.id : ""}
+                    value={selectedRound ? selectedRound.id : ""}
                     disabled
                   />
                 </div>
@@ -372,16 +337,16 @@ const MatchInfo = () => {
                     for="bracket_id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Bracket ID
+                    Round Name
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     id="bracket_id"
-                    name="bracket"
+                    name="name"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.bracket.id : ""}
+                    value={selectedRound ? selectedRound.name : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
@@ -391,73 +356,35 @@ const MatchInfo = () => {
                     for="match_name"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Match name
+                    Map
                   </label>
                   <input
                     type="text"
                     id="match_name"
-                    name="name"
+                    name="map"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.name : ""}
+                    value={selectedRound ? selectedRound.map : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
                 </div>
                 <div>
                   <label
-                    for="time"
+                    for="match_name"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    id="time"
-                    name="startTime"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder=""
-                    required
-                    value={formattedDateTime}
-                    disabled={!isEditing}
-                    onChange={handleChangeInput}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="lap"
-                    className="block mb-2 text-sm font-medium text-gray-900 "
-                  >
-                    Number of lap
+                    Competition ID
                   </label>
                   <input
                     type="number"
-                    id="lap"
-                    name="lap"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder="0"
-                    required
-                    value={selectedMatch ? selectedMatch.lap : ""}
-                    disabled={!isEditing}
-                    onChange={handleChangeInput}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="location"
-                    className="block mb-2 text-sm font-medium text-gray-900 "
-                  >
-                    Location
-                  </label>
-                  <input
-                    type="text"
-                    id="location"
-                    name="place"
+                    id="match_name"
+                    name="competition"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.place : ""}
+                    value={selectedRound ? selectedRound.competition.id : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
@@ -545,23 +472,34 @@ const MatchInfo = () => {
             },
           }}
         >
-          <DialogTitle>Add new match</DialogTitle>
+          <DialogTitle>Add new round</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Please enter all data fields to add a new match. This is required.
+              Please enter all data fields to add a new round. This is required.
             </DialogContentText>
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="id"
+              name="name"
+              label="Name"
+              type="text"
+              fullWidth
+              variant="standard"
+              onChange={handleAddInput}
+            />
 
             <TextField
               autoFocus
               required
               margin="dense"
-              id="name"
-              name="name"
-              label="Match Name"
-              type="email"
+              id="startTime"
+              name="map"
+              label="Map"
+              type="text"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.name : ""}
               onChange={handleAddInput}
             />
             <TextField
@@ -569,52 +507,11 @@ const MatchInfo = () => {
               required
               margin="dense"
               id="startTime"
-              name="startTime"
-              label=""
-              type="datetime-local"
-              fullWidth
-              variant="standard"
-              value={formattedDateTimeForAdd}
-              onChange={handleAddInput}
-            />
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="place"
-              name="place"
-              label="Location"
-              type="text"
-              fullWidth
-              variant="standard"
-              value={newMatch ? newMatch.place : ""}
-              onChange={handleAddInput}
-            />
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="lap"
-              name="lap"
-              label="Number of lap"
+              name="competitionId"
+              label="Competition ID"
               type="number"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.lap : ""}
-              onChange={handleAddInput}
-            />
-
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="bracketId"
-              name="bracketId"
-              label="Bracket ID"
-              type="number"
-              fullWidth
-              variant="standard"
-              value={newMatch ? newMatch.bracketId : ""}
               onChange={handleAddInput}
             />
           </DialogContent>
@@ -630,4 +527,4 @@ const MatchInfo = () => {
   );
 };
 
-export default MatchInfo;
+export default Rounds;

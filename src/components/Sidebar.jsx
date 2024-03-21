@@ -46,12 +46,111 @@ const Sidebar = () => {
             <FaChevronRight color="#fff" />
           </div>
         </Link>
-        <Link to={"charts"}>
+        <Link to={"students"}>
           <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
             <div className="flex items-center gap-[10px]">
               <FaChartBar color="#fff" />
               <p className="text-[14px] leading-[20px] font-normal text-white">
-                Charts
+                Students
+              </p>
+            </div>
+            <FaChevronRight color="#fff" />
+          </div>
+        </Link>
+        <Link to={"team"}>
+          <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
+            <div className="flex items-center gap-[10px]">
+              <FaChartBar color="#fff" />
+              <p className="text-[14px] leading-[20px] font-normal text-white">
+                Teams
+              </p>
+            </div>
+            <FaChevronRight color="#fff" />
+          </div>
+        </Link>
+        <Link to={"schools"}>
+          <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
+            <div className="flex items-center gap-[10px]">
+              <FaChartBar color="#fff" />
+              <p className="text-[14px] leading-[20px] font-normal text-white">
+                Schools
+              </p>
+            </div>
+            <FaChevronRight color="#fff" />
+          </div>
+        </Link>
+        <Link to={"rounds"}>
+          <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
+            <div className="flex items-center gap-[10px]">
+              <FaChartBar color="#fff" />
+              <p className="text-[14px] leading-[20px] font-normal text-white">
+                Rounds
+              </p>
+            </div>
+            <FaChevronRight color="#fff" />
+          </div>
+        </Link>
+        <Link to={"results"}>
+          <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
+            <div className="flex items-center gap-[10px]">
+              <FaChartBar color="#fff" />
+              <p className="text-[14px] leading-[20px] font-normal text-white">
+                Results
+              </p>
+            </div>
+            <FaChevronRight color="#fff" />
+          </div>
+        </Link>
+        <Link to={"contestants"}>
+          <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
+            <div className="flex items-center gap-[10px]">
+              <FaChartBar color="#fff" />
+              <p className="text-[14px] leading-[20px] font-normal text-white">
+                Contestants
+              </p>
+            </div>
+            <FaChevronRight color="#fff" />
+          </div>
+        </Link>
+        <Link to={"competitions"}>
+          <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
+            <div className="flex items-center gap-[10px]">
+              <FaChartBar color="#fff" />
+              <p className="text-[14px] leading-[20px] font-normal text-white">
+                Competitions
+              </p>
+            </div>
+            <FaChevronRight color="#fff" />
+          </div>
+        </Link>
+        <Link to={"coachs"}>
+          <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
+            <div className="flex items-center gap-[10px]">
+              <FaChartBar color="#fff" />
+              <p className="text-[14px] leading-[20px] font-normal text-white">
+                Coachs
+              </p>
+            </div>
+            <FaChevronRight color="#fff" />
+          </div>
+        </Link>
+        <Link to={"cars"}>
+          <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
+            <div className="flex items-center gap-[10px]">
+              <FaChartBar color="#fff" />
+              <p className="text-[14px] leading-[20px] font-normal text-white">
+                Cars
+              </p>
+            </div>
+            <FaChevronRight color="#fff" />
+          </div>
+        </Link>
+        <Link to={"brackets"}>
+          <div className="flex items-center justify-between gap-[10px] py-[15px] cursor-pointer">
+            <div className="flex items-center gap-[10px]">
+              <FaChartBar color="#fff" />
+              <p className="text-[14px] leading-[20px] font-normal text-white">
+                Brackets
               </p>
             </div>
             <FaChevronRight color="#fff" />

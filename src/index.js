@@ -5,9 +5,18 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Main from "./components/Main";
-import Charts from "./components/Charts/Charts";
+import Students from "./components/Students/Students";
 import LoginPage from "./Pages/Login/LoginPage";
 import Statistics from "./Pages/Statistics/Statistics";
+import Team from "./components/Team/Team";
+import Schools from "./components/Schools/Schools";
+import Rounds from "./components/Rounds/Rounds";
+import Results from "./components/Results/Results";
+import Contestants from "./components/Contestants/Contestants";
+import Competitions from "./components/Competitions/Competitions";
+import Coachs from "./components/Coachs/Coachs";
+import Cars from "./components/Cars/Cars";
+import Brackets from "./components/Brackets/Brackets";
 
 const router = createBrowserRouter([
   {
@@ -28,8 +37,44 @@ const router = createBrowserRouter([
         element: <Statistics />,
       },
       {
-        path: "/charts",
-        element: <Charts />,
+        path: "/students",
+        element: <Students />,
+      },
+      {
+        path: "/team",
+        element: <Team />,
+      },
+      {
+        path: "/schools",
+        element: <Schools />,
+      },
+      {
+        path: "/rounds",
+        element: <Rounds />,
+      },
+      {
+        path: "/results",
+        element: <Results />,
+      },
+      {
+        path: "/contestants",
+        element: <Contestants />,
+      },
+      {
+        path: "/competitions",
+        element: <Competitions />,
+      },
+      {
+        path: "/coachs",
+        element: <Coachs />,
+      },
+      {
+        path: "/cars",
+        element: <Cars />,
+      },
+      {
+        path: "/brackets",
+        element: <Brackets />,
       },
     ],
   },
