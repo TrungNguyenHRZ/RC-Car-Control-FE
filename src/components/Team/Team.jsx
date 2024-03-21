@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import apiMatchInstance from "../../service/api-match";
+import apiTeamInstance from "../../service/api-team";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import { FaEllipsisV } from "react-icons/fa";
@@ -17,11 +17,11 @@ import {
 } from "@mui/material";
 import { Button } from "antd";
 
-const MatchInfo = () => {
-  const [listMatch, setListMatch] = useState([]);
+const Team = () => {
+  const [newTeam, setNewTeam] = useState(null);
+  const [listTeam, setListTeam] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [newMatch, setNewMatch] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [openDelete, setOpenDelete] = React.useState(false);
@@ -30,10 +30,10 @@ const MatchInfo = () => {
   const [valueSearch, setValueSearch] = useState("");
 
   useEffect(() => {
-    apiMatchInstance
-      .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+    apiTeamInstance
+      .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
-        setListMatch(response.data.data);
+        setListTeam(response.data.data);
 
         //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
       })
@@ -41,147 +41,43 @@ const MatchInfo = () => {
         console.error(error);
       });
   }, []);
-
   const handleRowClick = (match) => {
-    setSelectedMatch(match);
+    setSelectedTeam(match);
     setIsEditing(false);
   };
   const handleEditToggle = () => {
-    if (selectedMatch != null) {
+    if (selectedTeam != null) {
       setIsEditing(!isEditing);
     }
   };
 
-  const handleAddToggle = () => {
-    setIsAdding(!isAdding);
-  };
-
-  const handlePageChange = async (event, newPage) => {
-    setCurrentPage(newPage);
-
-    await apiMatchInstance
-      .get("/matches?page=" + (newPage - 1) + "&size=" + itemPerPage)
-      .then((response) => {
-        setListMatch(response.data.data);
-
-        //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
-  const handleDeleteItem = () => {
-    console.log("Delete item");
-    setOpenDelete(true);
-  };
-  const renderedData = listMatch;
-
   const [totalPages, setTotalPage] = useState(5);
-
-  const formattedDateTime =
-    selectedMatch && selectedMatch.startTime
-      ? moment(selectedMatch.startTime).format("YYYY-MM-DDTHH:mm")
-      : "";
-
-  const formattedDateTimeForAdd =
-    newMatch && newMatch.startTime
-      ? moment(newMatch.startTime).format("YYYY-MM-DDTHH:mm")
-      : "";
-  const handleChangeInput = (e) => {
-    setSelectedMatch({
-      ...selectedMatch,
-      [e.target.name]: e.target.value,
-    });
-  };
-
   const handleAddInput = (e) => {
-    setNewMatch({
-      ...newMatch,
+    setNewTeam({
+      ...newTeam,
       [e.target.name]: e.target.value,
     });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsEditing(false);
-
-    console.log(selectedMatch);
-
-    if (selectedMatch.bracket.id) {
-      apiMatchInstance
-        .put("/match/" + selectedMatch.id, {
-          name: selectedMatch.name,
-          startTime: selectedMatch.startTime,
-          place: selectedMatch.place,
-          lap: selectedMatch.lap,
-          bracketId: selectedMatch.bracket.id,
-          status: "ACTIVE",
-        })
-        .then((response) => {
-          console.log(response.data);
-          apiMatchInstance
-            .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
-            .then((response) => {
-              setListMatch(response.data.data);
-
-              //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
-            })
-            .catch((error) => {
-              console.error(error);
-            });
-        }, [])
-        .catch((error) => {
-          console.error(error);
-        });
-    } else {
-      apiMatchInstance
-        .put("/match/" + selectedMatch.id, {
-          name: selectedMatch.name,
-          startTime: selectedMatch.startTime,
-          place: selectedMatch.place,
-          lap: selectedMatch.lap,
-          bracketId: selectedMatch.bracket,
-          status: "ACTIVE",
-        })
-        .then((response) => {
-          console.log(response.data);
-          apiMatchInstance
-            .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
-            .then((response) => {
-              setListMatch(response.data.data);
-
-              //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
-            })
-            .catch((error) => {
-              console.error(error);
-            });
-        }, [])
-        .catch((error) => {
-          console.error(error);
-        });
-    }
   };
 
   const handleAddingNew = (e) => {
     e.preventDefault();
 
-    console.log(newMatch);
-    apiMatchInstance
-      .post("/match", {
-        name: newMatch.name,
-        startTime: newMatch.startTime,
-        place: newMatch.place,
-        lap: newMatch.lap,
-        bracketId: newMatch.bracketId,
+    console.log(newTeam);
+    apiTeamInstance
+      .post("/team", {
+        name: newTeam.name,
+        coachId: newTeam.coachId,
+        competitionId: newTeam.competitionId,
         status: "ACTIVE",
       })
       .then((response) => {
         setOpenAdding(false);
-        setNewMatch(null);
-        apiMatchInstance
-          .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+        setNewTeam(null);
+
+        apiTeamInstance
+          .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
           .then((response) => {
-            setListMatch(response.data.data);
+            setListTeam(response.data.data);
 
             //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
           })
@@ -194,6 +90,141 @@ const MatchInfo = () => {
       });
   };
 
+  const handleAddToggle = () => {
+    setIsAdding(!isAdding);
+  };
+
+  const handlePageChange = async (event, newPage) => {
+    setCurrentPage(newPage);
+
+    await apiTeamInstance
+      .get("/teams?page=" + (newPage - 1) + "&size=" + itemPerPage)
+      .then((response) => {
+        setListTeam(response.data.data);
+
+        //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+  const handleDeleteItem = () => {
+    console.log("Delete item");
+    setOpenDelete(true);
+  };
+
+  const handleChangeInput = (e) => {
+    setSelectedTeam({
+      ...selectedTeam,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    console.log(selectedTeam);
+    e.preventDefault();
+    setIsEditing(false);
+
+    if (selectedTeam.coach.id && selectedTeam.competition.id) {
+      apiTeamInstance
+        .put("/team/" + selectedTeam.id, {
+          name: selectedTeam.name,
+          coachId: selectedTeam.coach.id,
+          competitionId: selectedTeam.competition.id,
+          status: "ACTIVE",
+        })
+        .then((response) => {
+          console.log(response.data);
+
+          apiTeamInstance
+            .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+            .then((response) => {
+              setListTeam(response.data.data);
+
+              //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else if (selectedTeam.coach.id && !selectedTeam.competition.id) {
+      apiTeamInstance
+        .put("/team/" + selectedTeam.id, {
+          name: selectedTeam.name,
+          coachId: selectedTeam.coach.id,
+          competitionId: selectedTeam.competition,
+          status: "ACTIVE",
+        })
+        .then((response) => {
+          console.log(response.data);
+          apiTeamInstance
+            .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+            .then((response) => {
+              setListTeam(response.data.data);
+
+              //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else if (!selectedTeam.coach.id && selectedTeam.competition.id) {
+      apiTeamInstance
+        .put("/team/" + selectedTeam.id, {
+          name: selectedTeam.name,
+          coachId: selectedTeam.coach,
+          competitionId: selectedTeam.competition.id,
+          status: "ACTIVE",
+        })
+        .then((response) => {
+          console.log(response.data);
+          apiTeamInstance
+            .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+            .then((response) => {
+              setListTeam(response.data.data);
+
+              //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else {
+      apiTeamInstance
+        .put("/team/" + selectedTeam.id, {
+          name: selectedTeam.name,
+          coachId: selectedTeam.coach,
+          competitionId: selectedTeam.competition,
+          status: "ACTIVE",
+        })
+        .then((response) => {
+          console.log(response.data);
+          apiTeamInstance
+            .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+            .then((response) => {
+              setListTeam(response.data.data);
+
+              //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  };
+
   const handleClose = () => {
     setOpenDelete(false);
   };
@@ -204,17 +235,16 @@ const MatchInfo = () => {
   const handleCloseAdding = () => {
     setOpenAdding(false);
   };
-
   const handleInput = (e) => {
     setValueSearch(e.target.value);
   };
 
   const handleSearch = () => {
     if (valueSearch == "") {
-      apiMatchInstance
-        .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+      apiTeamInstance
+        .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
-          setListMatch(response.data.data);
+          setListTeam(response.data.data);
           setTotalPage(5);
           //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
         })
@@ -222,14 +252,14 @@ const MatchInfo = () => {
           console.error(error);
         });
     } else {
-      apiMatchInstance
+      apiTeamInstance
         .get("/getByName?name=" + valueSearch)
         .then((response) => {
-          setListMatch(response.data.data.Matches);
+          setListTeam(response.data.data.Teams);
           setTotalPage(1);
         })
         .catch((error) => {
-          setListMatch([]);
+          setListTeam([]);
           setTotalPage(0);
         });
     }
@@ -257,7 +287,7 @@ const MatchInfo = () => {
       <div className="flex mt-[22px] w-full gap-[30px]">
         <div className="basis-[70%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
-            <h>Match</h>
+            <h>Teams</h>
             <FaCirclePlus
               color="green"
               className="cursor-pointer"
@@ -272,43 +302,35 @@ const MatchInfo = () => {
                     ID
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Match
+                    Name
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Bracket
+                    Coach
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    School
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    competition
                   </th>
 
-                  <th scope="col" className="px-6 py-3">
-                    Competition
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Start Time
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Address
-                  </th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {listMatch.length !== 0 ? (
-                  renderedData.map((item, index) => (
+                {listTeam.length !== 0 ? (
+                  listTeam.map((item, index) => (
                     <tr
                       key={item.id}
                       className="odd:bg-white  even:bg-gray-200  border-b cursor-pointer transition delay-50 hover:bg-[#668bfac9] hover:text-white"
                       onClick={() => handleRowClick(item)}
                     >
-                      <td className="px-6 py-4 font-medium  whitespace-nowrap ">
-                        {item.id}
-                      </td>
+                      <td className="px-6 py-4">{item.id}</td>
                       <td className="px-6 py-4">{item.name}</td>
-                      <td className="px-6 py-4">{item.bracket.name}</td>
-                      <td className="px-6 py-4">
-                        {item.bracket.round.competition.name}
-                      </td>
+                      <td className="px-6 py-4">{item.coach.name}</td>
+                      <td className="px-6 py-4">{item.coach.school.name}</td>
+                      <td className="px-6 py-4">{item.competition.name}</td>
 
-                      <td className="px-6 py-4">{item.startTime}</td>
-                      <td className="px-6 py-4">{item.place}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"
@@ -340,7 +362,7 @@ const MatchInfo = () => {
         </div>
         <div className="basis-[30%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
-            <h2>Match Detail</h2>
+            <h2>Team Detail</h2>
             <FaEllipsisV color="gray" className="cursor-pointer" />
           </div>
           <div className="flex flex-col">
@@ -351,114 +373,76 @@ const MatchInfo = () => {
               <div className="grid gap-6 mb-6 md:grid-cols-2">
                 <div>
                   <label
-                    for="match_id"
+                    for="id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Match ID
+                    Team ID
                   </label>
                   <input
                     type="text"
-                    id="match_id"
+                    id="id"
                     name="id"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.id : ""}
+                    value={selectedTeam ? selectedTeam.id : ""}
                     disabled
                   />
                 </div>
                 <div>
                   <label
-                    for="bracket_id"
+                    for="name"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Bracket ID
-                  </label>
-                  <input
-                    type="number"
-                    id="bracket_id"
-                    name="bracket"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder=""
-                    required
-                    value={selectedMatch ? selectedMatch.bracket.id : ""}
-                    disabled={!isEditing}
-                    onChange={handleChangeInput}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="match_name"
-                    className="block mb-2 text-sm font-medium text-gray-900 "
-                  >
-                    Match name
+                    Team Name
                   </label>
                   <input
                     type="text"
-                    id="match_name"
+                    id="name"
                     name="name"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.name : ""}
+                    value={selectedTeam ? selectedTeam.name : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
                 </div>
                 <div>
                   <label
-                    for="time"
+                    for="id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    id="time"
-                    name="startTime"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder=""
-                    required
-                    value={formattedDateTime}
-                    disabled={!isEditing}
-                    onChange={handleChangeInput}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="lap"
-                    className="block mb-2 text-sm font-medium text-gray-900 "
-                  >
-                    Number of lap
+                    Coach ID
                   </label>
                   <input
                     type="number"
-                    id="lap"
-                    name="lap"
+                    id="id"
+                    name="coach"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder="0"
+                    placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.lap : ""}
+                    value={selectedTeam ? selectedTeam.coach.id : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
                 </div>
                 <div>
                   <label
-                    for="location"
+                    for="competitionId"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Location
+                    Competition ID
                   </label>
                   <input
-                    type="text"
-                    id="location"
-                    name="place"
+                    type="number"
+                    id="competitionId"
+                    name="competition"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.place : ""}
                     disabled={!isEditing}
+                    value={selectedTeam ? selectedTeam.competition.id : ""}
                     onChange={handleChangeInput}
                   />
                 </div>
@@ -545,7 +529,7 @@ const MatchInfo = () => {
             },
           }}
         >
-          <DialogTitle>Add new match</DialogTitle>
+          <DialogTitle>Add new Team</DialogTitle>
           <DialogContent>
             <DialogContentText>
               Please enter all data fields to add a new match. This is required.
@@ -557,64 +541,37 @@ const MatchInfo = () => {
               margin="dense"
               id="name"
               name="name"
-              label="Match Name"
-              type="email"
-              fullWidth
-              variant="standard"
-              value={newMatch ? newMatch.name : ""}
-              onChange={handleAddInput}
-            />
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="startTime"
-              name="startTime"
-              label=""
-              type="datetime-local"
-              fullWidth
-              variant="standard"
-              value={formattedDateTimeForAdd}
-              onChange={handleAddInput}
-            />
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="place"
-              name="place"
-              label="Location"
+              label="Team Name"
               type="text"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.place : ""}
+              value={newTeam ? newTeam.name : ""}
               onChange={handleAddInput}
             />
             <TextField
               autoFocus
               required
               margin="dense"
-              id="lap"
-              name="lap"
-              label="Number of lap"
+              id="coachId"
+              name="coachId"
+              label="Coach ID"
               type="number"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.lap : ""}
+              value={newTeam ? newTeam.coachId : ""}
               onChange={handleAddInput}
             />
-
             <TextField
               autoFocus
               required
               margin="dense"
-              id="bracketId"
-              name="bracketId"
-              label="Bracket ID"
+              id="competitionId"
+              name="competitionId"
+              label="Competition ID"
               type="number"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.bracketId : ""}
+              value={newTeam ? newTeam.competitionId : ""}
               onChange={handleAddInput}
             />
           </DialogContent>
@@ -630,4 +587,4 @@ const MatchInfo = () => {
   );
 };
 
-export default MatchInfo;
+export default Team;

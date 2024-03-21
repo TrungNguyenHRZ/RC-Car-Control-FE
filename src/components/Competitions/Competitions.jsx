@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import apiMatchInstance from "../../service/api-match";
+import apiCompetitionInstance from "../../service/api-competition";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import { FaEllipsisV } from "react-icons/fa";
@@ -17,23 +17,24 @@ import {
 } from "@mui/material";
 import { Button } from "antd";
 
-const MatchInfo = () => {
-  const [listMatch, setListMatch] = useState([]);
+const Competitions = () => {
+  const [newCompetition, setNewCompetition] = useState(null);
+  const [listCompetition, setListCompetition] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [newMatch, setNewMatch] = useState(null);
+  const [selectedCompetition, setSelectedCompetition] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [openDelete, setOpenDelete] = React.useState(false);
   const [openAdding, setOpenAdding] = React.useState(false);
   const itemPerPage = 6;
+  const [totalPages, setTotalPage] = useState(5);
   const [valueSearch, setValueSearch] = useState("");
 
   useEffect(() => {
-    apiMatchInstance
-      .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+    apiCompetitionInstance
+      .get("/competitions?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
-        setListMatch(response.data.data);
+        setListCompetition(response.data.data);
 
         //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
       })
@@ -41,15 +42,51 @@ const MatchInfo = () => {
         console.error(error);
       });
   }, []);
-
-  const handleRowClick = (match) => {
-    setSelectedMatch(match);
+  const handleRowClick = (Competition) => {
+    setSelectedCompetition(Competition);
     setIsEditing(false);
   };
   const handleEditToggle = () => {
-    if (selectedMatch != null) {
+    if (selectedCompetition != null) {
       setIsEditing(!isEditing);
     }
+  };
+
+  const handleAddInput = (e) => {
+    setNewCompetition({
+      ...newCompetition,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleAddingNew = (e) => {
+    e.preventDefault();
+
+    apiCompetitionInstance
+      .post("/competition", {
+        name: newCompetition.name,
+        description: newCompetition.description,
+        holdPlace: newCompetition.holdPlace,
+        schoolYearId: newCompetition.schoolYearId,
+        status: "ACTIVE",
+      })
+      .then((response) => {
+        setOpenAdding(false);
+        setNewCompetition(null);
+        apiCompetitionInstance
+          .get(
+            "/competitions?page=" + (currentPage - 1) + "&size=" + itemPerPage
+          )
+          .then((response) => {
+            setListCompetition(response.data.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const handleAddToggle = () => {
@@ -58,11 +95,11 @@ const MatchInfo = () => {
 
   const handlePageChange = async (event, newPage) => {
     setCurrentPage(newPage);
-
-    await apiMatchInstance
-      .get("/matches?page=" + (newPage - 1) + "&size=" + itemPerPage)
+    await apiCompetitionInstance
+      .get("/competitions?page=" + (newPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
-        setListMatch(response.data.data);
+        console.log(response.data.data);
+        setListCompetition(response.data.data);
 
         //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
       })
@@ -74,29 +111,10 @@ const MatchInfo = () => {
     console.log("Delete item");
     setOpenDelete(true);
   };
-  const renderedData = listMatch;
 
-  const [totalPages, setTotalPage] = useState(5);
-
-  const formattedDateTime =
-    selectedMatch && selectedMatch.startTime
-      ? moment(selectedMatch.startTime).format("YYYY-MM-DDTHH:mm")
-      : "";
-
-  const formattedDateTimeForAdd =
-    newMatch && newMatch.startTime
-      ? moment(newMatch.startTime).format("YYYY-MM-DDTHH:mm")
-      : "";
   const handleChangeInput = (e) => {
-    setSelectedMatch({
-      ...selectedMatch,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleAddInput = (e) => {
-    setNewMatch({
-      ...newMatch,
+    setSelectedCompetition({
+      ...selectedCompetition,
       [e.target.name]: e.target.value,
     });
   };
@@ -105,93 +123,61 @@ const MatchInfo = () => {
     e.preventDefault();
     setIsEditing(false);
 
-    console.log(selectedMatch);
-
-    if (selectedMatch.bracket.id) {
-      apiMatchInstance
-        .put("/match/" + selectedMatch.id, {
-          name: selectedMatch.name,
-          startTime: selectedMatch.startTime,
-          place: selectedMatch.place,
-          lap: selectedMatch.lap,
-          bracketId: selectedMatch.bracket.id,
+    if (selectedCompetition.schoolYear.id) {
+      apiCompetitionInstance
+        .put("/competition/" + selectedCompetition.id, {
+          name: selectedCompetition.name,
+          description: selectedCompetition.description,
+          holdPlace: selectedCompetition.holdPlace,
+          schoolYearId: selectedCompetition.schoolYear.id,
           status: "ACTIVE",
         })
         .then((response) => {
           console.log(response.data);
-          apiMatchInstance
-            .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          apiCompetitionInstance
+            .get(
+              "/competitions?page=" + (currentPage - 1) + "&size=" + itemPerPage
+            )
             .then((response) => {
-              setListMatch(response.data.data);
+              setListCompetition(response.data.data);
 
               //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
             })
             .catch((error) => {
               console.error(error);
             });
-        }, [])
+        })
         .catch((error) => {
           console.error(error);
         });
     } else {
-      apiMatchInstance
-        .put("/match/" + selectedMatch.id, {
-          name: selectedMatch.name,
-          startTime: selectedMatch.startTime,
-          place: selectedMatch.place,
-          lap: selectedMatch.lap,
-          bracketId: selectedMatch.bracket,
+      apiCompetitionInstance
+        .put("/competition/" + selectedCompetition.id, {
+          name: selectedCompetition.name,
+          description: selectedCompetition.description,
+          holdPlace: selectedCompetition.holdPlace,
+          schoolYearId: selectedCompetition.schoolYear,
           status: "ACTIVE",
         })
         .then((response) => {
           console.log(response.data);
-          apiMatchInstance
-            .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          apiCompetitionInstance
+            .get(
+              "/competitions?page=" + (currentPage - 1) + "&size=" + itemPerPage
+            )
             .then((response) => {
-              setListMatch(response.data.data);
+              setListCompetition(response.data.data);
 
               //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
             })
             .catch((error) => {
               console.error(error);
             });
-        }, [])
+        })
         .catch((error) => {
           console.error(error);
         });
     }
-  };
-
-  const handleAddingNew = (e) => {
-    e.preventDefault();
-
-    console.log(newMatch);
-    apiMatchInstance
-      .post("/match", {
-        name: newMatch.name,
-        startTime: newMatch.startTime,
-        place: newMatch.place,
-        lap: newMatch.lap,
-        bracketId: newMatch.bracketId,
-        status: "ACTIVE",
-      })
-      .then((response) => {
-        setOpenAdding(false);
-        setNewMatch(null);
-        apiMatchInstance
-          .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
-          .then((response) => {
-            setListMatch(response.data.data);
-
-            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
   };
 
   const handleClose = () => {
@@ -204,35 +190,33 @@ const MatchInfo = () => {
   const handleCloseAdding = () => {
     setOpenAdding(false);
   };
-
   const handleInput = (e) => {
     setValueSearch(e.target.value);
   };
 
   const handleSearch = () => {
-    if (valueSearch == "") {
-      apiMatchInstance
-        .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
-        .then((response) => {
-          setListMatch(response.data.data);
-          setTotalPage(5);
-          //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    } else {
-      apiMatchInstance
-        .get("/getByName?name=" + valueSearch)
-        .then((response) => {
-          setListMatch(response.data.data.Matches);
-          setTotalPage(1);
-        })
-        .catch((error) => {
-          setListMatch([]);
-          setTotalPage(0);
-        });
-    }
+    // if (valueSearch == "") {
+    //   apiCompetitionInstance
+    //     .get("/getList?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+    //     .then((response) => {
+    //       setListCompetition(response.data.data);
+    //       setTotalPage(5);
+    //     })
+    //     .catch((error) => {
+    //       console.error(error);
+    //     });
+    // } else {
+    //   apiCompetitionInstance
+    //     .get("/getByName?name=" + valueSearch)
+    //     .then((response) => {
+    //       setListCompetition(response.data.data.Competitions);
+    //       setTotalPage(1);
+    //     })
+    //     .catch((error) => {
+    //       setListCompetition([]);
+    //       setTotalPage(0);
+    //     });
+    // }
   };
   return (
     <div className="pt-[25px] px-[25px] bg-[#F9F8FC]">
@@ -257,7 +241,7 @@ const MatchInfo = () => {
       <div className="flex mt-[22px] w-full gap-[30px]">
         <div className="basis-[70%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
-            <h>Match</h>
+            <h>Competitions</h>
             <FaCirclePlus
               color="green"
               className="cursor-pointer"
@@ -272,43 +256,34 @@ const MatchInfo = () => {
                     ID
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Match
+                    Name
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Bracket
+                    Description
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Hold Place
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Year
                   </th>
 
-                  <th scope="col" className="px-6 py-3">
-                    Competition
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Start Time
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Address
-                  </th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {listMatch.length !== 0 ? (
-                  renderedData.map((item, index) => (
+                {listCompetition.length !== 0 ? (
+                  listCompetition.map((item, index) => (
                     <tr
                       key={item.id}
                       className="odd:bg-white  even:bg-gray-200  border-b cursor-pointer transition delay-50 hover:bg-[#668bfac9] hover:text-white"
                       onClick={() => handleRowClick(item)}
                     >
-                      <td className="px-6 py-4 font-medium  whitespace-nowrap ">
-                        {item.id}
-                      </td>
+                      <td className="px-6 py-4">{item.id}</td>
                       <td className="px-6 py-4">{item.name}</td>
-                      <td className="px-6 py-4">{item.bracket.name}</td>
-                      <td className="px-6 py-4">
-                        {item.bracket.round.competition.name}
-                      </td>
-
-                      <td className="px-6 py-4">{item.startTime}</td>
-                      <td className="px-6 py-4">{item.place}</td>
+                      <td className="px-6 py-4">{item.description}</td>
+                      <td className="px-6 py-4">{item.holdPlace}</td>
+                      <td className="px-6 py-4">{item.schoolYear.year}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"
@@ -340,7 +315,7 @@ const MatchInfo = () => {
         </div>
         <div className="basis-[30%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
-            <h2>Match Detail</h2>
+            <h2>School Detail</h2>
             <FaEllipsisV color="gray" className="cursor-pointer" />
           </div>
           <div className="flex flex-col">
@@ -354,7 +329,7 @@ const MatchInfo = () => {
                     for="match_id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Match ID
+                    Competition ID
                   </label>
                   <input
                     type="text"
@@ -363,7 +338,7 @@ const MatchInfo = () => {
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.id : ""}
+                    value={selectedCompetition ? selectedCompetition.id : ""}
                     disabled
                   />
                 </div>
@@ -372,16 +347,16 @@ const MatchInfo = () => {
                     for="bracket_id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Bracket ID
+                    Competition Name
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     id="bracket_id"
-                    name="bracket"
+                    name="name"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.bracket.id : ""}
+                    value={selectedCompetition ? selectedCompetition.name : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
@@ -391,73 +366,62 @@ const MatchInfo = () => {
                     for="match_name"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Match name
+                    Description
                   </label>
                   <input
                     type="text"
                     id="match_name"
-                    name="name"
+                    name="description"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.name : ""}
+                    value={
+                      selectedCompetition ? selectedCompetition.description : ""
+                    }
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
                 </div>
                 <div>
                   <label
-                    for="time"
+                    for="match_name"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    id="time"
-                    name="startTime"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder=""
-                    required
-                    value={formattedDateTime}
-                    disabled={!isEditing}
-                    onChange={handleChangeInput}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="lap"
-                    className="block mb-2 text-sm font-medium text-gray-900 "
-                  >
-                    Number of lap
-                  </label>
-                  <input
-                    type="number"
-                    id="lap"
-                    name="lap"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder="0"
-                    required
-                    value={selectedMatch ? selectedMatch.lap : ""}
-                    disabled={!isEditing}
-                    onChange={handleChangeInput}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="location"
-                    className="block mb-2 text-sm font-medium text-gray-900 "
-                  >
-                    Location
+                    Hold Place
                   </label>
                   <input
                     type="text"
-                    id="location"
-                    name="place"
+                    id="match_name"
+                    name="holdPlace"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.place : ""}
+                    value={
+                      selectedCompetition ? selectedCompetition.holdPlace : ""
+                    }
+                    disabled={!isEditing}
+                    onChange={handleChangeInput}
+                  />
+                </div>
+                <div>
+                  <label
+                    for="match_name"
+                    className="block mb-2 text-sm font-medium text-gray-900 "
+                  >
+                    Year ID
+                  </label>
+                  <input
+                    type="number"
+                    id="match_name"
+                    name="schoolYear"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                    placeholder=""
+                    required
+                    value={
+                      selectedCompetition
+                        ? selectedCompetition.schoolYear.id
+                        : ""
+                    }
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
@@ -545,23 +509,35 @@ const MatchInfo = () => {
             },
           }}
         >
-          <DialogTitle>Add new match</DialogTitle>
+          <DialogTitle>Add new competition</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Please enter all data fields to add a new match. This is required.
+              Please enter all data fields to add a new competition. This is
+              required.
             </DialogContentText>
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="id"
+              name="name"
+              label="Name"
+              type="text"
+              fullWidth
+              variant="standard"
+              onChange={handleAddInput}
+            />
 
             <TextField
               autoFocus
               required
               margin="dense"
-              id="name"
-              name="name"
-              label="Match Name"
-              type="email"
+              id="startTime"
+              name="description"
+              label="Description"
+              type="text"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.name : ""}
               onChange={handleAddInput}
             />
             <TextField
@@ -569,52 +545,23 @@ const MatchInfo = () => {
               required
               margin="dense"
               id="startTime"
-              name="startTime"
-              label=""
-              type="datetime-local"
-              fullWidth
-              variant="standard"
-              value={formattedDateTimeForAdd}
-              onChange={handleAddInput}
-            />
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="place"
-              name="place"
-              label="Location"
+              name="holdPlace"
+              label="Hold Place"
               type="text"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.place : ""}
               onChange={handleAddInput}
             />
             <TextField
               autoFocus
               required
               margin="dense"
-              id="lap"
-              name="lap"
-              label="Number of lap"
-              type="number"
+              id="startTime"
+              name="schoolYearId"
+              label="Year ID"
+              type="text"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.lap : ""}
-              onChange={handleAddInput}
-            />
-
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="bracketId"
-              name="bracketId"
-              label="Bracket ID"
-              type="number"
-              fullWidth
-              variant="standard"
-              value={newMatch ? newMatch.bracketId : ""}
               onChange={handleAddInput}
             />
           </DialogContent>
@@ -630,4 +577,4 @@ const MatchInfo = () => {
   );
 };
 
-export default MatchInfo;
+export default Competitions;

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaEllipsisV, FaRegCalendarMinus } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 // import {
 //   LineChart,
 //   Line,
@@ -26,6 +27,31 @@ import { Progress } from "antd";
 import { Box, CircularProgress } from "@mui/material";
 
 const Main = () => {
+  const navigate = useNavigate();
+
+  function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(";");
+    for (var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == " ") {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+
+  useEffect(() => {
+    var username = getCookie("username");
+    if (username !== "") {
+    } else {
+      navigate("/login");
+    }
+  }, []);
+
   const data = [
     {
       year: "2020",

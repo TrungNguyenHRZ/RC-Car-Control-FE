@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import apiMatchInstance from "../../service/api-match";
+import apiCoachInstance from "../../service/api-coach";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import { FaEllipsisV } from "react-icons/fa";
@@ -17,39 +17,82 @@ import {
 } from "@mui/material";
 import { Button } from "antd";
 
-const MatchInfo = () => {
-  const [listMatch, setListMatch] = useState([]);
+const Coachs = () => {
+  const [newCoach, setNewCoach] = useState(null);
+  const [listCoach, setListCoach] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [newMatch, setNewMatch] = useState(null);
+  const [selectedCoach, setSelectedCoach] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [openDelete, setOpenDelete] = React.useState(false);
   const [openAdding, setOpenAdding] = React.useState(false);
   const itemPerPage = 6;
+  const [totalPages, setTotalPage] = useState(5);
   const [valueSearch, setValueSearch] = useState("");
 
   useEffect(() => {
-    apiMatchInstance
-      .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+    apiCoachInstance
+      .get("/coaches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
-        setListMatch(response.data.data);
-
-        //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+        setListCoach(response.data.data.Coach);
+        console.log(response.data.data);
       })
       .catch((error) => {
         console.error(error);
       });
   }, []);
-
-  const handleRowClick = (match) => {
-    setSelectedMatch(match);
+  const handleRowClick = (Coach) => {
+    setSelectedCoach(Coach);
     setIsEditing(false);
   };
   const handleEditToggle = () => {
-    if (selectedMatch != null) {
+    if (selectedCoach != null) {
       setIsEditing(!isEditing);
     }
+  };
+
+  const handleAddInput = (e) => {
+    setNewCoach({
+      ...newCoach,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const formattedDateTime =
+    selectedCoach && selectedCoach.dob
+      ? moment(selectedCoach.dob).format("YYYY-MM-DDTHH:mm")
+      : "";
+
+  const formattedDateTimeForAdd =
+    newCoach && newCoach.dob
+      ? moment(newCoach.dob).format("YYYY-MM-DDTHH:mm")
+      : "";
+
+  const handleAddingNew = (e) => {
+    e.preventDefault();
+    apiCoachInstance
+      .post("/coach", {
+        name: newCoach.name,
+        dob: newCoach.dob,
+        sex: newCoach.sex,
+        status: "ACTIVE",
+        schoolId: newCoach.schoolId,
+      })
+      .then((response) => {
+        setOpenAdding(false);
+        setNewCoach(null);
+        apiCoachInstance
+          .get("/coaches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListCoach(response.data.data.Coach);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const handleAddToggle = () => {
@@ -58,13 +101,10 @@ const MatchInfo = () => {
 
   const handlePageChange = async (event, newPage) => {
     setCurrentPage(newPage);
-
-    await apiMatchInstance
-      .get("/matches?page=" + (newPage - 1) + "&size=" + itemPerPage)
+    await apiCoachInstance
+      .get("/coaches?page=" + (newPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
-        setListMatch(response.data.data);
-
-        //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+        setListCoach(response.data.data.Coach);
       })
       .catch((error) => {
         console.error(error);
@@ -74,29 +114,10 @@ const MatchInfo = () => {
     console.log("Delete item");
     setOpenDelete(true);
   };
-  const renderedData = listMatch;
 
-  const [totalPages, setTotalPage] = useState(5);
-
-  const formattedDateTime =
-    selectedMatch && selectedMatch.startTime
-      ? moment(selectedMatch.startTime).format("YYYY-MM-DDTHH:mm")
-      : "";
-
-  const formattedDateTimeForAdd =
-    newMatch && newMatch.startTime
-      ? moment(newMatch.startTime).format("YYYY-MM-DDTHH:mm")
-      : "";
   const handleChangeInput = (e) => {
-    setSelectedMatch({
-      ...selectedMatch,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleAddInput = (e) => {
-    setNewMatch({
-      ...newMatch,
+    setSelectedCoach({
+      ...selectedCoach,
       [e.target.name]: e.target.value,
     });
   };
@@ -105,93 +126,59 @@ const MatchInfo = () => {
     e.preventDefault();
     setIsEditing(false);
 
-    console.log(selectedMatch);
+    if (selectedCoach.school.id) {
+      apiCoachInstance
+        .put("/coach/" + selectedCoach.id, {
+          name: selectedCoach.name,
+          dob: selectedCoach.dob,
 
-    if (selectedMatch.bracket.id) {
-      apiMatchInstance
-        .put("/match/" + selectedMatch.id, {
-          name: selectedMatch.name,
-          startTime: selectedMatch.startTime,
-          place: selectedMatch.place,
-          lap: selectedMatch.lap,
-          bracketId: selectedMatch.bracket.id,
+          sex: selectedCoach.sex,
           status: "ACTIVE",
+          schoolId: selectedCoach.school.id,
         })
         .then((response) => {
           console.log(response.data);
-          apiMatchInstance
-            .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          apiCoachInstance
+            .get("/coaches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
             .then((response) => {
-              setListMatch(response.data.data);
+              setListCoach(response.data.data.Coach);
 
               //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
             })
             .catch((error) => {
               console.error(error);
             });
-        }, [])
+        })
         .catch((error) => {
           console.error(error);
         });
     } else {
-      apiMatchInstance
-        .put("/match/" + selectedMatch.id, {
-          name: selectedMatch.name,
-          startTime: selectedMatch.startTime,
-          place: selectedMatch.place,
-          lap: selectedMatch.lap,
-          bracketId: selectedMatch.bracket,
+      apiCoachInstance
+        .put("/coach/" + selectedCoach.id, {
+          name: selectedCoach.name,
+          dob: selectedCoach.dob,
+
+          sex: selectedCoach.sex,
           status: "ACTIVE",
+          schoolId: selectedCoach.school,
         })
         .then((response) => {
           console.log(response.data);
-          apiMatchInstance
-            .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          apiCoachInstance
+            .get("/coaches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
             .then((response) => {
-              setListMatch(response.data.data);
+              setListCoach(response.data.data.Coach);
 
               //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
             })
             .catch((error) => {
               console.error(error);
             });
-        }, [])
+        })
         .catch((error) => {
           console.error(error);
         });
     }
-  };
-
-  const handleAddingNew = (e) => {
-    e.preventDefault();
-
-    console.log(newMatch);
-    apiMatchInstance
-      .post("/match", {
-        name: newMatch.name,
-        startTime: newMatch.startTime,
-        place: newMatch.place,
-        lap: newMatch.lap,
-        bracketId: newMatch.bracketId,
-        status: "ACTIVE",
-      })
-      .then((response) => {
-        setOpenAdding(false);
-        setNewMatch(null);
-        apiMatchInstance
-          .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
-          .then((response) => {
-            setListMatch(response.data.data);
-
-            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
   };
 
   const handleClose = () => {
@@ -204,32 +191,30 @@ const MatchInfo = () => {
   const handleCloseAdding = () => {
     setOpenAdding(false);
   };
-
   const handleInput = (e) => {
     setValueSearch(e.target.value);
   };
 
   const handleSearch = () => {
     if (valueSearch == "") {
-      apiMatchInstance
-        .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+      apiCoachInstance
+        .get("/coaches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
-          setListMatch(response.data.data);
+          setListCoach(response.data.data);
           setTotalPage(5);
-          //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
         })
         .catch((error) => {
           console.error(error);
         });
     } else {
-      apiMatchInstance
+      apiCoachInstance
         .get("/getByName?name=" + valueSearch)
         .then((response) => {
-          setListMatch(response.data.data.Matches);
+          setListCoach(response.data.data.Schools);
           setTotalPage(1);
         })
         .catch((error) => {
-          setListMatch([]);
+          setListCoach([]);
           setTotalPage(0);
         });
     }
@@ -257,7 +242,7 @@ const MatchInfo = () => {
       <div className="flex mt-[22px] w-full gap-[30px]">
         <div className="basis-[70%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
-            <h>Match</h>
+            <h>Coaches</h>
             <FaCirclePlus
               color="green"
               className="cursor-pointer"
@@ -272,43 +257,35 @@ const MatchInfo = () => {
                     ID
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Match
+                    Name
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Bracket
+                    Date of birth
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Gender
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    School
                   </th>
 
-                  <th scope="col" className="px-6 py-3">
-                    Competition
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Start Time
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Address
-                  </th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {listMatch.length !== 0 ? (
-                  renderedData.map((item, index) => (
+                {listCoach.length !== 0 ? (
+                  listCoach.map((item, index) => (
                     <tr
                       key={item.id}
                       className="odd:bg-white  even:bg-gray-200  border-b cursor-pointer transition delay-50 hover:bg-[#668bfac9] hover:text-white"
                       onClick={() => handleRowClick(item)}
                     >
-                      <td className="px-6 py-4 font-medium  whitespace-nowrap ">
-                        {item.id}
-                      </td>
+                      <td className="px-6 py-4">{item.id}</td>
                       <td className="px-6 py-4">{item.name}</td>
-                      <td className="px-6 py-4">{item.bracket.name}</td>
-                      <td className="px-6 py-4">
-                        {item.bracket.round.competition.name}
-                      </td>
+                      <td className="px-6 py-4">{item.dob}</td>
+                      <td className="px-6 py-4">{item.sex}</td>
+                      <td className="px-6 py-4">{item.school.name}</td>
 
-                      <td className="px-6 py-4">{item.startTime}</td>
-                      <td className="px-6 py-4">{item.place}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"
@@ -340,7 +317,7 @@ const MatchInfo = () => {
         </div>
         <div className="basis-[30%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
-            <h2>Match Detail</h2>
+            <h2>Coach Detail</h2>
             <FaEllipsisV color="gray" className="cursor-pointer" />
           </div>
           <div className="flex flex-col">
@@ -354,7 +331,7 @@ const MatchInfo = () => {
                     for="match_id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Match ID
+                    ID
                   </label>
                   <input
                     type="text"
@@ -363,7 +340,7 @@ const MatchInfo = () => {
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.id : ""}
+                    value={selectedCoach ? selectedCoach.id : ""}
                     disabled
                   />
                 </div>
@@ -372,16 +349,16 @@ const MatchInfo = () => {
                     for="bracket_id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Bracket ID
+                    Name
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     id="bracket_id"
-                    name="bracket"
+                    name="name"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.bracket.id : ""}
+                    value={selectedCoach ? selectedCoach.name : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
@@ -391,31 +368,12 @@ const MatchInfo = () => {
                     for="match_name"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Match name
-                  </label>
-                  <input
-                    type="text"
-                    id="match_name"
-                    name="name"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder=""
-                    required
-                    value={selectedMatch ? selectedMatch.name : ""}
-                    disabled={!isEditing}
-                    onChange={handleChangeInput}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="time"
-                    className="block mb-2 text-sm font-medium text-gray-900 "
-                  >
-                    Time
+                    Date of birth
                   </label>
                   <input
                     type="datetime-local"
-                    id="time"
-                    name="startTime"
+                    id="match_name"
+                    name="dob"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
@@ -426,38 +384,38 @@ const MatchInfo = () => {
                 </div>
                 <div>
                   <label
-                    for="lap"
+                    for="bracket_id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Number of lap
+                    Gender
                   </label>
                   <input
-                    type="number"
-                    id="lap"
-                    name="lap"
+                    type="text"
+                    id="bracket_id"
+                    name="sex"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder="0"
+                    placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.lap : ""}
+                    value={selectedCoach ? selectedCoach.sex : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
                 </div>
                 <div>
                   <label
-                    for="location"
+                    for="bracket_id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Location
+                    School ID
                   </label>
                   <input
-                    type="text"
-                    id="location"
-                    name="place"
+                    type="number"
+                    id="bracket_id"
+                    name="school"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.place : ""}
+                    value={selectedCoach ? selectedCoach.school.id : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
@@ -545,32 +503,31 @@ const MatchInfo = () => {
             },
           }}
         >
-          <DialogTitle>Add new match</DialogTitle>
+          <DialogTitle>Add new coach</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Please enter all data fields to add a new match. This is required.
+              Please enter all data fields to add a new coach. This is required.
             </DialogContentText>
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="id"
+              name="name"
+              label="Name"
+              type="text"
+              fullWidth
+              variant="standard"
+              onChange={handleAddInput}
+            />
 
             <TextField
               autoFocus
               required
               margin="dense"
-              id="name"
-              name="name"
-              label="Match Name"
-              type="email"
-              fullWidth
-              variant="standard"
-              value={newMatch ? newMatch.name : ""}
-              onChange={handleAddInput}
-            />
-            <TextField
-              autoFocus
-              required
-              margin="dense"
               id="startTime"
-              name="startTime"
-              label=""
+              name="dob"
+              label="Date of birth"
               type="datetime-local"
               fullWidth
               variant="standard"
@@ -581,40 +538,24 @@ const MatchInfo = () => {
               autoFocus
               required
               margin="dense"
-              id="place"
-              name="place"
-              label="Location"
+              id="id"
+              name="sex"
+              label="Gender"
               type="text"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.place : ""}
               onChange={handleAddInput}
             />
             <TextField
               autoFocus
               required
               margin="dense"
-              id="lap"
-              name="lap"
-              label="Number of lap"
-              type="number"
+              id="id"
+              name="schoolId"
+              label="School ID"
+              type="text"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.lap : ""}
-              onChange={handleAddInput}
-            />
-
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="bracketId"
-              name="bracketId"
-              label="Bracket ID"
-              type="number"
-              fullWidth
-              variant="standard"
-              value={newMatch ? newMatch.bracketId : ""}
               onChange={handleAddInput}
             />
           </DialogContent>
@@ -630,4 +571,4 @@ const MatchInfo = () => {
   );
 };
 
-export default MatchInfo;
+export default Coachs;

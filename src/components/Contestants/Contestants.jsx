@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import apiMatchInstance from "../../service/api-match";
+import apiContestantInstance from "../../service/api-contestant";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import { FaEllipsisV } from "react-icons/fa";
@@ -17,23 +17,24 @@ import {
 } from "@mui/material";
 import { Button } from "antd";
 
-const MatchInfo = () => {
-  const [listMatch, setListMatch] = useState([]);
+const Contestants = () => {
+  const [newContestant, setNewContestant] = useState(null);
+  const [listContestant, setListContestant] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [newMatch, setNewMatch] = useState(null);
+  const [selectedContestant, setSelectedContestant] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [openDelete, setOpenDelete] = React.useState(false);
   const [openAdding, setOpenAdding] = React.useState(false);
   const itemPerPage = 6;
+  const [totalPages, setTotalPage] = useState(5);
   const [valueSearch, setValueSearch] = useState("");
 
   useEffect(() => {
-    apiMatchInstance
-      .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+    apiContestantInstance
+      .get("/contestants?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
-        setListMatch(response.data.data);
+        setListContestant(response.data.data);
 
         //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
       })
@@ -41,15 +42,52 @@ const MatchInfo = () => {
         console.error(error);
       });
   }, []);
-
   const handleRowClick = (match) => {
-    setSelectedMatch(match);
+    setSelectedContestant(match);
     setIsEditing(false);
   };
   const handleEditToggle = () => {
-    if (selectedMatch != null) {
+    if (selectedContestant != null) {
       setIsEditing(!isEditing);
     }
+  };
+
+  const handleAddInput = (e) => {
+    setNewContestant({
+      ...newContestant,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleAddingNew = (e) => {
+    e.preventDefault();
+
+    apiContestantInstance
+      .post("/contestant", {
+        studentId: newContestant.studentId,
+        coachId: newContestant.coachId,
+        teamId: newContestant.teamId,
+        status: "ACTIVE",
+      })
+      .then((response) => {
+        setOpenAdding(false);
+        setNewContestant(null);
+        apiContestantInstance
+          .get(
+            "/contestants?page=" + (currentPage - 1) + "&size=" + itemPerPage
+          )
+          .then((response) => {
+            setListContestant(response.data.data);
+
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const handleAddToggle = () => {
@@ -58,11 +96,11 @@ const MatchInfo = () => {
 
   const handlePageChange = async (event, newPage) => {
     setCurrentPage(newPage);
-
-    await apiMatchInstance
-      .get("/matches?page=" + (newPage - 1) + "&size=" + itemPerPage)
+    await apiContestantInstance
+      .get("/contestants?page=" + (newPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
-        setListMatch(response.data.data);
+        console.log(response.data.data);
+        setListContestant(response.data.data);
 
         //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
       })
@@ -74,29 +112,10 @@ const MatchInfo = () => {
     console.log("Delete item");
     setOpenDelete(true);
   };
-  const renderedData = listMatch;
 
-  const [totalPages, setTotalPage] = useState(5);
-
-  const formattedDateTime =
-    selectedMatch && selectedMatch.startTime
-      ? moment(selectedMatch.startTime).format("YYYY-MM-DDTHH:mm")
-      : "";
-
-  const formattedDateTimeForAdd =
-    newMatch && newMatch.startTime
-      ? moment(newMatch.startTime).format("YYYY-MM-DDTHH:mm")
-      : "";
   const handleChangeInput = (e) => {
-    setSelectedMatch({
-      ...selectedMatch,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleAddInput = (e) => {
-    setNewMatch({
-      ...newMatch,
+    setSelectedContestant({
+      ...selectedContestant,
       [e.target.name]: e.target.value,
     });
   };
@@ -105,83 +124,43 @@ const MatchInfo = () => {
     e.preventDefault();
     setIsEditing(false);
 
-    console.log(selectedMatch);
+    var studentTMP = 0;
+    var coachTMP = 0;
+    var teamTMP = 0;
 
-    if (selectedMatch.bracket.id) {
-      apiMatchInstance
-        .put("/match/" + selectedMatch.id, {
-          name: selectedMatch.name,
-          startTime: selectedMatch.startTime,
-          place: selectedMatch.place,
-          lap: selectedMatch.lap,
-          bracketId: selectedMatch.bracket.id,
-          status: "ACTIVE",
-        })
-        .then((response) => {
-          console.log(response.data);
-          apiMatchInstance
-            .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
-            .then((response) => {
-              setListMatch(response.data.data);
-
-              //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
-            })
-            .catch((error) => {
-              console.error(error);
-            });
-        }, [])
-        .catch((error) => {
-          console.error(error);
-        });
+    if (selectedContestant.student.id) {
+      studentTMP = selectedContestant.student.id;
     } else {
-      apiMatchInstance
-        .put("/match/" + selectedMatch.id, {
-          name: selectedMatch.name,
-          startTime: selectedMatch.startTime,
-          place: selectedMatch.place,
-          lap: selectedMatch.lap,
-          bracketId: selectedMatch.bracket,
-          status: "ACTIVE",
-        })
-        .then((response) => {
-          console.log(response.data);
-          apiMatchInstance
-            .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
-            .then((response) => {
-              setListMatch(response.data.data);
-
-              //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
-            })
-            .catch((error) => {
-              console.error(error);
-            });
-        }, [])
-        .catch((error) => {
-          console.error(error);
-        });
+      studentTMP = selectedContestant.student;
     }
-  };
 
-  const handleAddingNew = (e) => {
-    e.preventDefault();
+    if (selectedContestant.coach.id) {
+      coachTMP = selectedContestant.coach.id;
+    } else {
+      coachTMP = selectedContestant.coach;
+    }
 
-    console.log(newMatch);
-    apiMatchInstance
-      .post("/match", {
-        name: newMatch.name,
-        startTime: newMatch.startTime,
-        place: newMatch.place,
-        lap: newMatch.lap,
-        bracketId: newMatch.bracketId,
+    if (selectedContestant.team.id) {
+      teamTMP = selectedContestant.team.id;
+    } else {
+      teamTMP = selectedContestant.team;
+    }
+
+    apiContestantInstance
+      .put("/contestant/" + selectedContestant.id, {
+        studentId: studentTMP,
+        coachId: coachTMP,
+        teamId: teamTMP,
         status: "ACTIVE",
       })
       .then((response) => {
-        setOpenAdding(false);
-        setNewMatch(null);
-        apiMatchInstance
-          .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+        console.log(response.data);
+        apiContestantInstance
+          .get(
+            "/contestants?page=" + (currentPage - 1) + "&size=" + itemPerPage
+          )
           .then((response) => {
-            setListMatch(response.data.data);
+            setListContestant(response.data.data);
 
             //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
           })
@@ -204,17 +183,16 @@ const MatchInfo = () => {
   const handleCloseAdding = () => {
     setOpenAdding(false);
   };
-
   const handleInput = (e) => {
     setValueSearch(e.target.value);
   };
 
   const handleSearch = () => {
     if (valueSearch == "") {
-      apiMatchInstance
-        .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+      apiContestantInstance
+        .get("/contestants?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
-          setListMatch(response.data.data);
+          setListContestant(response.data.data);
           setTotalPage(5);
           //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
         })
@@ -222,14 +200,14 @@ const MatchInfo = () => {
           console.error(error);
         });
     } else {
-      apiMatchInstance
+      apiContestantInstance
         .get("/getByName?name=" + valueSearch)
         .then((response) => {
-          setListMatch(response.data.data.Matches);
+          setListContestant(response.data.data.Contestants);
           setTotalPage(1);
         })
         .catch((error) => {
-          setListMatch([]);
+          setListContestant([]);
           setTotalPage(0);
         });
     }
@@ -257,7 +235,7 @@ const MatchInfo = () => {
       <div className="flex mt-[22px] w-full gap-[30px]">
         <div className="basis-[70%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
-            <h>Match</h>
+            <h>Contestants</h>
             <FaCirclePlus
               color="green"
               className="cursor-pointer"
@@ -272,43 +250,42 @@ const MatchInfo = () => {
                     ID
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Match
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Bracket
+                    Student Name
                   </th>
 
                   <th scope="col" className="px-6 py-3">
+                    Team
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Coach
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    School
+                  </th>
+                  <th scope="col" className="px-6 py-3">
                     Competition
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Start Time
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Address
-                  </th>
+
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {listMatch.length !== 0 ? (
-                  renderedData.map((item, index) => (
+                {listContestant.length !== 0 ? (
+                  listContestant.map((item, index) => (
                     <tr
                       key={item.id}
                       className="odd:bg-white  even:bg-gray-200  border-b cursor-pointer transition delay-50 hover:bg-[#668bfac9] hover:text-white"
                       onClick={() => handleRowClick(item)}
                     >
-                      <td className="px-6 py-4 font-medium  whitespace-nowrap ">
-                        {item.id}
-                      </td>
-                      <td className="px-6 py-4">{item.name}</td>
-                      <td className="px-6 py-4">{item.bracket.name}</td>
+                      <td className="px-6 py-4">{item.id}</td>
+                      <td className="px-6 py-4">{item.student.name}</td>
+                      <td className="px-6 py-4">{item.team.name}</td>
+                      <td className="px-6 py-4">{item.coach.name}</td>
+                      <td className="px-6 py-4">{item.student.school.name}</td>
                       <td className="px-6 py-4">
-                        {item.bracket.round.competition.name}
+                        {item.team.competition.name}
                       </td>
 
-                      <td className="px-6 py-4">{item.startTime}</td>
-                      <td className="px-6 py-4">{item.place}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"
@@ -340,7 +317,7 @@ const MatchInfo = () => {
         </div>
         <div className="basis-[30%] border bg-white shadow-md rounded-[4px]">
           <div className="bg-[#F8F9FC] flex items-center justify-between px-[20px] py-[15px] border-b-[1px] border-[#EDEDED]">
-            <h2>Match Detail</h2>
+            <h2>Contestant Detail</h2>
             <FaEllipsisV color="gray" className="cursor-pointer" />
           </div>
           <div className="flex flex-col">
@@ -354,7 +331,7 @@ const MatchInfo = () => {
                     for="match_id"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Match ID
+                    Contestant ID
                   </label>
                   <input
                     type="text"
@@ -363,63 +340,28 @@ const MatchInfo = () => {
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedMatch ? selectedMatch.id : ""}
+                    value={selectedContestant ? selectedContestant.id : ""}
                     disabled
                   />
                 </div>
+
                 <div>
                   <label
-                    for="bracket_id"
+                    for="lap"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Bracket ID
+                    Student ID
                   </label>
                   <input
                     type="number"
-                    id="bracket_id"
-                    name="bracket"
+                    id="lap"
+                    name="student"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder=""
+                    placeholder="0"
                     required
-                    value={selectedMatch ? selectedMatch.bracket.id : ""}
-                    disabled={!isEditing}
-                    onChange={handleChangeInput}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="match_name"
-                    className="block mb-2 text-sm font-medium text-gray-900 "
-                  >
-                    Match name
-                  </label>
-                  <input
-                    type="text"
-                    id="match_name"
-                    name="name"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder=""
-                    required
-                    value={selectedMatch ? selectedMatch.name : ""}
-                    disabled={!isEditing}
-                    onChange={handleChangeInput}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="time"
-                    className="block mb-2 text-sm font-medium text-gray-900 "
-                  >
-                    Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    id="time"
-                    name="startTime"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder=""
-                    required
-                    value={formattedDateTime}
+                    value={
+                      selectedContestant ? selectedContestant.student.id : ""
+                    }
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
@@ -429,35 +371,37 @@ const MatchInfo = () => {
                     for="lap"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Number of lap
+                    Coach ID
                   </label>
                   <input
                     type="number"
                     id="lap"
-                    name="lap"
+                    name="coach"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder="0"
                     required
-                    value={selectedMatch ? selectedMatch.lap : ""}
+                    value={
+                      selectedContestant ? selectedContestant.coach.id : ""
+                    }
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
                 </div>
                 <div>
                   <label
-                    for="location"
+                    for="lap"
                     className="block mb-2 text-sm font-medium text-gray-900 "
                   >
-                    Location
+                    Team ID
                   </label>
                   <input
-                    type="text"
-                    id="location"
-                    name="place"
+                    type="number"
+                    id="lap"
+                    name="team"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-                    placeholder=""
+                    placeholder="0"
                     required
-                    value={selectedMatch ? selectedMatch.place : ""}
+                    value={selectedContestant ? selectedContestant.team.id : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
@@ -545,76 +489,47 @@ const MatchInfo = () => {
             },
           }}
         >
-          <DialogTitle>Add new match</DialogTitle>
+          <DialogTitle>Add new contestant</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Please enter all data fields to add a new match. This is required.
+              Please enter all data fields to add a new contestant. This is
+              required.
             </DialogContentText>
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="id"
+              name="studentId"
+              label="Student ID"
+              type="number"
+              fullWidth
+              variant="standard"
+              onChange={handleAddInput}
+            />
 
             <TextField
               autoFocus
               required
               margin="dense"
               id="name"
-              name="name"
-              label="Match Name"
-              type="email"
-              fullWidth
-              variant="standard"
-              value={newMatch ? newMatch.name : ""}
-              onChange={handleAddInput}
-            />
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="startTime"
-              name="startTime"
-              label=""
-              type="datetime-local"
-              fullWidth
-              variant="standard"
-              value={formattedDateTimeForAdd}
-              onChange={handleAddInput}
-            />
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="place"
-              name="place"
-              label="Location"
-              type="text"
-              fullWidth
-              variant="standard"
-              value={newMatch ? newMatch.place : ""}
-              onChange={handleAddInput}
-            />
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="lap"
-              name="lap"
-              label="Number of lap"
+              name="coachId"
+              label="Coach ID"
               type="number"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.lap : ""}
               onChange={handleAddInput}
             />
-
             <TextField
               autoFocus
               required
               margin="dense"
-              id="bracketId"
-              name="bracketId"
-              label="Bracket ID"
+              id="teamId"
+              name="teamId"
+              label="Team ID"
               type="number"
               fullWidth
               variant="standard"
-              value={newMatch ? newMatch.bracketId : ""}
               onChange={handleAddInput}
             />
           </DialogContent>
@@ -630,4 +545,4 @@ const MatchInfo = () => {
   );
 };
 
-export default MatchInfo;
+export default Contestants;
