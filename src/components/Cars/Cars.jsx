@@ -32,6 +32,15 @@ const Cars = () => {
 
   useEffect(() => {
     apiCarInstance
+      .get("/Total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    apiCarInstance
       .get("/cars?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
         setListCar(response.data.data);
@@ -80,6 +89,14 @@ const Cars = () => {
             setListCar(response.data.data);
 
             //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        apiCarInstance
+          .get("/Total")
+          .then((response) => {
+            setTotalPage(Math.ceil(response.data / itemPerPage));
           })
           .catch((error) => {
             console.error(error);
@@ -179,6 +196,31 @@ const Cars = () => {
   };
 
   const handleClose = () => {
+    apiCarInstance
+      .put("/car-status/" + selectedCar.id)
+      .then((response) => {
+        apiCarInstance
+          .get("/cars?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListCar(response.data.data);
+            apiCarInstance
+              .get("/Total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -198,15 +240,21 @@ const Cars = () => {
         .get("/cars?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
           setListCar(response.data.data);
-          setTotalPage(5);
-          //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          apiCarInstance
+            .get("/Total")
+            .then((response) => {
+              setTotalPage(Math.ceil(response.data / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
         })
         .catch((error) => {
           console.error(error);
         });
     } else {
       apiCarInstance
-        .get("/getByName?name=" + valueSearch)
+        .get("/car/name/" + valueSearch)
         .then((response) => {
           setListCar(response.data.data.Cars);
           setTotalPage(1);
@@ -266,6 +314,9 @@ const Cars = () => {
                   <th scope="col" className="px-6 py-3">
                     Team
                   </th>
+                  <th scope="col" className="px-6 py-3">
+                    Status
+                  </th>
 
                   <th></th>
                 </tr>
@@ -283,7 +334,7 @@ const Cars = () => {
                       <td className="px-6 py-4">{item.type}</td>
                       <td className="px-6 py-4">{item.description}</td>
                       <td className="px-6 py-4">{item.team.name}</td>
-
+                      <td className="px-6 py-4">{item.status}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"

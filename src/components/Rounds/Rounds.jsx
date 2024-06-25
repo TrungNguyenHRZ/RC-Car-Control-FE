@@ -32,6 +32,15 @@ const Rounds = () => {
 
   useEffect(() => {
     apiRoundInstance
+      .get("/total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    apiRoundInstance
       .get("/rounds?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
         setListRound(response.data.data);
@@ -74,6 +83,14 @@ const Rounds = () => {
           .get("/rounds?page=" + (currentPage - 1) + "&size=" + itemPerPage)
           .then((response) => {
             setListRound(response.data.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        apiRoundInstance
+          .get("/total")
+          .then((response) => {
+            setTotalPage(Math.ceil(response.data / itemPerPage));
           })
           .catch((error) => {
             console.error(error);
@@ -170,6 +187,31 @@ const Rounds = () => {
   };
 
   const handleClose = () => {
+    apiRoundInstance
+      .put("/round-status/" + selectedRound.id)
+      .then((response) => {
+        apiRoundInstance
+          .get("/rounds?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListRound(response.data.data);
+            apiRoundInstance
+              .get("/total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -189,14 +231,21 @@ const Rounds = () => {
         .get("/rounds?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
           setListRound(response.data.data);
-          setTotalPage(5);
+          apiRoundInstance
+            .get("/total")
+            .then((response) => {
+              setTotalPage(Math.ceil(response.data / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
         })
         .catch((error) => {
           console.error(error);
         });
     } else {
       apiRoundInstance
-        .get("/getByName?name=" + valueSearch)
+        .get("/round/name/" + valueSearch)
         .then((response) => {
           setListRound(response.data.data.Rounds);
           setTotalPage(1);
@@ -256,6 +305,9 @@ const Rounds = () => {
                   <th scope="col" className="px-6 py-3">
                     Competition Place
                   </th>
+                  <th scope="col" className="px-6 py-3">
+                    Status
+                  </th>
                   <th></th>
                 </tr>
               </thead>
@@ -274,6 +326,7 @@ const Rounds = () => {
                       <td className="px-6 py-4">
                         {item.competition.holdPlace}
                       </td>
+                      <td className="px-6 py-4">{item.status}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"

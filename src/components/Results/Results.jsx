@@ -33,6 +33,14 @@ const Results = () => {
 
   useEffect(() => {
     apiResultInstance
+      .get("/total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    apiResultInstance
       .get("/results?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
         setListResults(response.data.data);
@@ -81,6 +89,14 @@ const Results = () => {
           .catch((error) => {
             console.error(error);
           });
+        apiResultInstance
+          .get("/total")
+          .then((response) => {
+            setTotalPage(Math.ceil(response.data / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
       })
       .catch((error) => {
         console.error(error);
@@ -115,41 +131,81 @@ const Results = () => {
     });
   };
 
-  //   const handleSubmit = (e) => {
-  //     e.preventDefault();
-  //     setIsEditing(false);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsEditing(false);
 
-  //     const contestantId = 0;
-  //     const matchId = 0;
-  //     const carId = 0;
+    var contestantId = 0;
+    var matchId = 0;
+    var carId = 0;
 
-  //     if(selectedResults.contestant.) {
+    if (selectedResults.contestant.id) {
+      contestantId = selectedResults.contestant.id;
+    } else {
+      contestantId = selectedResults.contestant;
+    }
 
-  //     }
-  //     apiResultInstance
-  //       .put("/update?id=" + selectedResults.id, {
-  //         score: selectedResults.score,
-  //         finishTime: selectedResults.finishTime,
-  //         competitionId: selectedResults.competition.id,
-  //         status: "ACTIVE",
-  //       })
-  //       .then((response) => {
-  //         console.log(response.data);
-  //         apiRoundInstance
-  //           .get("/getList?page=" + (currentPage - 1) + "&size=" + itemPerPage)
-  //           .then((response) => {
-  //             setListRound(response.data.data);
+    if (selectedResults.match.id) {
+      matchId = selectedResults.match.id;
+    } else {
+      matchId = selectedResults.match;
+    }
 
-  //             //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
-  //           })
-  //           .catch((error) => {
-  //             console.error(error);
-  //           });
-  //       });
-  //   };
-  const handleSubmit = (e) => {};
+    if (selectedResults.car.id) {
+      carId = selectedResults.car.id;
+    } else {
+      carId = selectedResults.car;
+    }
+
+    apiResultInstance
+      .put("/result/" + selectedResults.id, {
+        score: selectedResults.score,
+        finishTime: selectedResults.finishTime,
+        contestantId: contestantId,
+        matchId: matchId,
+        carId: carId,
+        status: "ACTIVE",
+      })
+      .then((response) => {
+        apiResultInstance
+          .get("/results?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListResults(response.data.data);
+
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      });
+  };
 
   const handleClose = () => {
+    apiResultInstance
+      .put("/result-status/" + selectedResults.id)
+      .then((response) => {
+        apiResultInstance
+          .get("/results?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListResults(response.data.data);
+            apiResultInstance
+              .get("/total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -169,7 +225,14 @@ const Results = () => {
         .get("/results?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
           setListResults(response.data.data);
-          setTotalPage(5);
+          apiResultInstance
+            .get("/total")
+            .then((response) => {
+              setTotalPage(Math.ceil(response.data / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
         })
         .catch((error) => {
           console.error(error);
@@ -248,6 +311,12 @@ const Results = () => {
                   <th scope="col" className="px-6 py-3">
                     Competition
                   </th>
+                  <th scope="col" className="px-6 py-3">
+                    Car
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Status
+                  </th>
                   <th></th>
                 </tr>
               </thead>
@@ -270,6 +339,9 @@ const Results = () => {
                       <td className="px-6 py-4">
                         {item.match.bracket.round.competition.name}
                       </td>
+                      <td className="px-6 py-4">{item.car.name}</td>
+
+                      <td className="px-6 py-4">{item.status}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"
@@ -355,13 +427,13 @@ const Results = () => {
                     Finish Time
                   </label>
                   <input
-                    type="time"
+                    type="text"
                     id="finishTime"
                     name="finishTime"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={formattedDateTime}
+                    value={selectedResults ? selectedResults.finishTime : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
@@ -404,7 +476,7 @@ const Results = () => {
                     onChange={handleChangeInput}
                   />
                 </div>
-                {/* <div>
+                <div>
                   <label
                     for="match_name"
                     className="block mb-2 text-sm font-medium text-gray-900 "
@@ -418,11 +490,11 @@ const Results = () => {
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                     placeholder=""
                     required
-                    value={selectedResults ? selectedResult : ""}
+                    value={selectedResults ? selectedResults.car.id : ""}
                     disabled={!isEditing}
                     onChange={handleChangeInput}
                   />
-                </div> */}
+                </div>
               </div>
               <div className="flex justify-end">
                 {isEditing ? (

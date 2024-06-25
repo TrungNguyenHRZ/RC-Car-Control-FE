@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import MatchInfo from "../../components/Match/MatchInfo";
 import { useNavigate } from "react-router-dom";
+
 //import Cookies from "js-cookie";
 
 const Staticstis = () => {
@@ -21,13 +22,13 @@ const Staticstis = () => {
     return "";
   }
 
-  useEffect(() => {
-    var username = getCookie("username");
-    if (username !== "") {
-    } else {
-      navigate("/login");
-    }
-  }, []);
+  // useEffect(() => {
+  //   var username = getCookie("username");
+  //   if (username !== "") {
+  //   } else {
+  //     navigate("/login");
+  //   }
+  // }, []);
 
   return (
     <>

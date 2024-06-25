@@ -5,13 +5,15 @@ import { Outlet } from "react-router-dom";
 const App = () => {
   return (
     <div className="flex">
-      <div className="basis-[12%] h-[100vh]">
+      {/* <div className="basis-[12%] h-[100vh]">
         <Sidebar />
-      </div>
-      <div className="basis-[88%] border h-[100vh] overflow-y-scroll">
-        <Dashboardview />
+      </div> */}
+      <div className="basis-[100%] border h-[100vh] overflow-y-scroll">
         <div>
-          <Outlet></Outlet>
+          <Dashboardview />
+          <div>
+            <Outlet></Outlet>
+          </div>
         </div>
       </div>
     </div>

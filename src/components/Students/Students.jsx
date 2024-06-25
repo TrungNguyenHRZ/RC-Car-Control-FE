@@ -27,10 +27,19 @@ const Students = () => {
   const [openDelete, setOpenDelete] = React.useState(false);
   const [openAdding, setOpenAdding] = React.useState(false);
   const itemPerPage = 6;
-  const [totalPages, setTotalPage] = useState(5);
+  const [totalPages, setTotalPage] = useState(1);
   const [valueSearch, setValueSearch] = useState("");
 
   useEffect(() => {
+    apiStudentInstance
+      .get("/total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     apiStudentInstance
       .get("/students?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
@@ -80,6 +89,14 @@ const Students = () => {
             setListStudent(response.data.data);
 
             //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        apiStudentInstance
+          .get("/total")
+          .then((response) => {
+            setTotalPage(Math.ceil(response.data / itemPerPage));
           })
           .catch((error) => {
             console.error(error);
@@ -189,6 +206,30 @@ const Students = () => {
   };
 
   const handleClose = () => {
+    apiStudentInstance
+      .put("/student-status/" + selectedStudent.id)
+      .then((response) => {
+        apiStudentInstance
+          .get("/students?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListStudent(response.data.data);
+            apiStudentInstance
+              .get("/total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -208,7 +249,14 @@ const Students = () => {
         .get("/students?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
           setListStudent(response.data.data);
-          setTotalPage(5);
+          apiStudentInstance
+            .get("/total")
+            .then((response) => {
+              setTotalPage(Math.ceil(response.data / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
           //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
         })
         .catch((error) => {
@@ -216,7 +264,7 @@ const Students = () => {
         });
     } else {
       apiStudentInstance
-        .get("/getByName?name=" + valueSearch)
+        .get("/student/name/" + valueSearch)
         .then((response) => {
           setListStudent(response.data.data.Students);
           setTotalPage(1);
@@ -280,6 +328,9 @@ const Students = () => {
                   <th scope="col" className="px-6 py-3">
                     School address
                   </th>
+                  <th scope="col" className="px-6 py-3">
+                    Status
+                  </th>
                   <th></th>
                 </tr>
               </thead>
@@ -297,6 +348,7 @@ const Students = () => {
                       <td className="px-6 py-4">{item.sex}</td>
                       <td className="px-6 py-4">{item.school.name}</td>
                       <td className="px-6 py-4">{item.school.address}</td>
+                      <td className="px-6 py-4">{item.status}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"

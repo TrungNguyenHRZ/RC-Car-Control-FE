@@ -32,10 +32,18 @@ const Coachs = () => {
 
   useEffect(() => {
     apiCoachInstance
+      .get("/total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    apiCoachInstance
       .get("/coaches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
         setListCoach(response.data.data.Coach);
-        console.log(response.data.data);
       })
       .catch((error) => {
         console.error(error);
@@ -85,6 +93,14 @@ const Coachs = () => {
           .get("/coaches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
           .then((response) => {
             setListCoach(response.data.data.Coach);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        apiCoachInstance
+          .get("/total")
+          .then((response) => {
+            setTotalPage(Math.ceil(response.data / itemPerPage));
           })
           .catch((error) => {
             console.error(error);
@@ -182,6 +198,31 @@ const Coachs = () => {
   };
 
   const handleClose = () => {
+    apiCoachInstance
+      .put("/coach-status/" + selectedCoach.id)
+      .then((response) => {
+        apiCoachInstance
+          .get("/coaches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListCoach(response.data.data.Coach);
+            apiCoachInstance
+              .get("/total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -200,17 +241,24 @@ const Coachs = () => {
       apiCoachInstance
         .get("/coaches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
-          setListCoach(response.data.data);
-          setTotalPage(5);
+          setListCoach(response.data.data.Coach);
+          apiCoachInstance
+            .get("/total")
+            .then((response) => {
+              setTotalPage(Math.ceil(response.data / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
         })
         .catch((error) => {
           console.error(error);
         });
     } else {
       apiCoachInstance
-        .get("/getByName?name=" + valueSearch)
+        .get("/coach/name/" + valueSearch)
         .then((response) => {
-          setListCoach(response.data.data.Schools);
+          setListCoach(response.data.data.Coaches);
           setTotalPage(1);
         })
         .catch((error) => {
@@ -268,6 +316,9 @@ const Coachs = () => {
                   <th scope="col" className="px-6 py-3">
                     School
                   </th>
+                  <th scope="col" className="px-6 py-3">
+                    Status
+                  </th>
 
                   <th></th>
                 </tr>
@@ -285,7 +336,7 @@ const Coachs = () => {
                       <td className="px-6 py-4">{item.dob}</td>
                       <td className="px-6 py-4">{item.sex}</td>
                       <td className="px-6 py-4">{item.school.name}</td>
-
+                      <td className="px-6 py-4">{item.status}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"

@@ -32,6 +32,14 @@ const Brackets = () => {
 
   useEffect(() => {
     apiBracketInstance
+      .get("/total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    apiBracketInstance
       .get("/brackets?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
         setListBracket(response.data.data);
@@ -77,6 +85,14 @@ const Brackets = () => {
           .get("/brackets?page=" + (currentPage - 1) + "&size=" + itemPerPage)
           .then((response) => {
             setListBracket(response.data.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        apiBracketInstance
+          .get("/total")
+          .then((response) => {
+            setTotalPage(Math.ceil(response.data / itemPerPage));
           })
           .catch((error) => {
             console.error(error);
@@ -171,6 +187,31 @@ const Brackets = () => {
   };
 
   const handleClose = () => {
+    apiBracketInstance
+      .put("/bracket-status/" + selectedBracket.id)
+      .then((response) => {
+        apiBracketInstance
+          .get("/brackets?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListBracket(response.data.data);
+            apiBracketInstance
+              .get("/Total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -190,16 +231,23 @@ const Brackets = () => {
         .get("/brackets?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
           setListBracket(response.data.data);
-          setTotalPage(5);
+          apiBracketInstance
+            .get("/total")
+            .then((response) => {
+              setTotalPage(Math.ceil(response.data / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
         })
         .catch((error) => {
           console.error(error);
         });
     } else {
       apiBracketInstance
-        .get("/getByName?name=" + valueSearch)
+        .get("/bracket/name/" + valueSearch)
         .then((response) => {
-          setListBracket(response.data.data.Brackets);
+          setListBracket(response.data.data.Bracket);
           setTotalPage(1);
         })
         .catch((error) => {
@@ -254,6 +302,9 @@ const Brackets = () => {
                   <th scope="col" className="px-6 py-3">
                     Competition
                   </th>
+                  <th scope="col" className="px-6 py-3">
+                    Status
+                  </th>
 
                   <th></th>
                 </tr>
@@ -272,6 +323,7 @@ const Brackets = () => {
                       <td className="px-6 py-4">
                         {item.round.competition.name}
                       </td>
+                      <td className="px-6 py-4">{item.status}</td>
 
                       <td className="px-6 py-4">
                         <RemoveCircleIcon

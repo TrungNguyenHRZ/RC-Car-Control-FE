@@ -27,10 +27,19 @@ const Schools = () => {
   const [openDelete, setOpenDelete] = React.useState(false);
   const [openAdding, setOpenAdding] = React.useState(false);
   const itemPerPage = 6;
-  const [totalPages, setTotalPage] = useState(5);
+  const [totalPages, setTotalPage] = useState(1);
   const [valueSearch, setValueSearch] = useState("");
 
   useEffect(() => {
+    apiSchoolInstance
+      .get("/total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     apiSchoolInstance
       .get("/schools?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
@@ -77,6 +86,14 @@ const Schools = () => {
           .get("/schools?page=" + (currentPage - 1) + "&size=" + itemPerPage)
           .then((response) => {
             setListSchool(response.data.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        apiSchoolInstance
+          .get("/total")
+          .then((response) => {
+            setTotalPage(Math.ceil(response.data / itemPerPage));
           })
           .catch((error) => {
             console.error(error);
@@ -148,6 +165,31 @@ const Schools = () => {
   };
 
   const handleClose = () => {
+    apiSchoolInstance
+      .put("/school-status/" + selectedSchool.id)
+      .then((response) => {
+        apiSchoolInstance
+          .get("/schools?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListSchool(response.data.data);
+            apiSchoolInstance
+              .get("/total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -167,14 +209,21 @@ const Schools = () => {
         .get("/schools?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
           setListSchool(response.data.data);
-          setTotalPage(5);
+          apiSchoolInstance
+            .get("/total")
+            .then((response) => {
+              setTotalPage(Math.ceil(response.data / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
         })
         .catch((error) => {
           console.error(error);
         });
     } else {
       apiSchoolInstance
-        .get("/getByName?name=" + valueSearch)
+        .get("/school/name/" + valueSearch)
         .then((response) => {
           setListSchool(response.data.data.Schools);
           setTotalPage(1);
@@ -228,6 +277,9 @@ const Schools = () => {
                   <th scope="col" className="px-6 py-3">
                     Address
                   </th>
+                  <th scope="col" className="px-6 py-3">
+                    Status
+                  </th>
 
                   <th></th>
                 </tr>
@@ -243,7 +295,7 @@ const Schools = () => {
                       <td className="px-6 py-4">{item.id}</td>
                       <td className="px-6 py-4">{item.name}</td>
                       <td className="px-6 py-4">{item.address}</td>
-
+                      <td className="px-6 py-4">{item.status}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"

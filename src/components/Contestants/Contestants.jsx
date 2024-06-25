@@ -32,6 +32,14 @@ const Contestants = () => {
 
   useEffect(() => {
     apiContestantInstance
+      .get("/total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    apiContestantInstance
       .get("/contestants?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
         setListContestant(response.data.data);
@@ -80,6 +88,14 @@ const Contestants = () => {
             setListContestant(response.data.data);
 
             //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        apiContestantInstance
+          .get("/total")
+          .then((response) => {
+            setTotalPage(Math.ceil(response.data / itemPerPage));
           })
           .catch((error) => {
             console.error(error);
@@ -174,6 +190,33 @@ const Contestants = () => {
   };
 
   const handleClose = () => {
+    apiContestantInstance
+      .put("/contestant-status/" + selectedContestant.id)
+      .then((response) => {
+        apiContestantInstance
+          .get(
+            "/contestants?page=" + (currentPage - 1) + "&size=" + itemPerPage
+          )
+          .then((response) => {
+            setListContestant(response.data.data);
+            apiContestantInstance
+              .get("/total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -193,7 +236,14 @@ const Contestants = () => {
         .get("/contestants?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
           setListContestant(response.data.data);
-          setTotalPage(5);
+          apiContestantInstance
+            .get("/total")
+            .then((response) => {
+              setTotalPage(Math.ceil(response.data / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
           //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
         })
         .catch((error) => {
@@ -266,6 +316,10 @@ const Contestants = () => {
                     Competition
                   </th>
 
+                  <th scope="col" className="px-6 py-3">
+                    Status
+                  </th>
+
                   <th></th>
                 </tr>
               </thead>
@@ -285,6 +339,7 @@ const Contestants = () => {
                       <td className="px-6 py-4">
                         {item.team.competition.name}
                       </td>
+                      <td className="px-6 py-4">{item.status}</td>
 
                       <td className="px-6 py-4">
                         <RemoveCircleIcon

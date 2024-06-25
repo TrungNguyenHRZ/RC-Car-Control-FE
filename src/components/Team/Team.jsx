@@ -28,14 +28,22 @@ const Team = () => {
   const [openAdding, setOpenAdding] = React.useState(false);
   const itemPerPage = 6;
   const [valueSearch, setValueSearch] = useState("");
+  const [totalPages, setTotalPage] = useState(1);
 
   useEffect(() => {
+    apiTeamInstance
+      .get("/total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     apiTeamInstance
       .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
         setListTeam(response.data.data);
-
-        //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
       })
       .catch((error) => {
         console.error(error);
@@ -51,7 +59,6 @@ const Team = () => {
     }
   };
 
-  const [totalPages, setTotalPage] = useState(5);
   const handleAddInput = (e) => {
     setNewTeam({
       ...newTeam,
@@ -78,6 +85,16 @@ const Team = () => {
           .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
           .then((response) => {
             setListTeam(response.data.data);
+
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        apiTeamInstance
+          .get("/total")
+          .then((response) => {
+            setTotalPage(response.data / itemPerPage);
 
             //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
           })
@@ -226,6 +243,31 @@ const Team = () => {
   };
 
   const handleClose = () => {
+    apiTeamInstance
+      .put("/team-status/" + selectedTeam.id)
+      .then((response) => {
+        apiTeamInstance
+          .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListTeam(response.data.data);
+            apiTeamInstance
+              .get("/total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -245,7 +287,16 @@ const Team = () => {
         .get("/teams?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
           setListTeam(response.data.data);
-          setTotalPage(5);
+          apiTeamInstance
+            .get("/total")
+            .then((response) => {
+              setTotalPage(response.data / itemPerPage);
+
+              //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
           //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
         })
         .catch((error) => {
@@ -253,7 +304,7 @@ const Team = () => {
         });
     } else {
       apiTeamInstance
-        .get("/getByName?name=" + valueSearch)
+        .get("/team/name/" + valueSearch)
         .then((response) => {
           setListTeam(response.data.data.Teams);
           setTotalPage(1);
@@ -311,7 +362,10 @@ const Team = () => {
                     School
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    competition
+                    Competition
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Status
                   </th>
 
                   <th></th>
@@ -330,7 +384,7 @@ const Team = () => {
                       <td className="px-6 py-4">{item.coach.name}</td>
                       <td className="px-6 py-4">{item.coach.school.name}</td>
                       <td className="px-6 py-4">{item.competition.name}</td>
-
+                      <td className="px-6 py-4">{item.status}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"

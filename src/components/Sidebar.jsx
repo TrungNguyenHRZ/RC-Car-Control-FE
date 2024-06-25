@@ -187,23 +187,6 @@ const Sidebar = () => {
           </p>
         </div>
       </div>
-
-      <div>
-        <div className="flex items-center justify-center pt-[15px]">
-          <div className="h-[40px] w-[40px] bg-[#3c5ec1] rounded-full flex items-center justify-center cursor-pointer">
-            <FaChevronLeft color="#fff" />
-          </div>
-        </div>
-        <div className="bg-[#395cbf] mt-[15px] flex items-center justify-center flex-col py-[15px] px-[10px] gap-[15px] rounded-[3px]">
-          <FaBolt color="#fff" />
-          <p className="text-[12px] leading-[18px] font-normal text-white/[0.4] text-center">
-            Demo feature. Coming soon.
-          </p>
-          <button className="bg-[#17A673] text-white flex items-center justify-center h-[30px] w-full rounded-[3px] text-[14px] leading-[21px] font-normal">
-            SUBSCRIBE !!!
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

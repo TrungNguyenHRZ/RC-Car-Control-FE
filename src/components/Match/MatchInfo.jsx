@@ -31,6 +31,15 @@ const MatchInfo = () => {
 
   useEffect(() => {
     apiMatchInstance
+      .get("/total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    apiMatchInstance
       .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
         setListMatch(response.data.data);
@@ -188,6 +197,14 @@ const MatchInfo = () => {
           .catch((error) => {
             console.error(error);
           });
+        apiMatchInstance
+          .get("/total")
+          .then((response) => {
+            setTotalPage(Math.ceil(response.data / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
       })
       .catch((error) => {
         console.error(error);
@@ -195,6 +212,31 @@ const MatchInfo = () => {
   };
 
   const handleClose = () => {
+    apiMatchInstance
+      .put("/match-status/" + selectedMatch.id)
+      .then((response) => {
+        apiMatchInstance
+          .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+          .then((response) => {
+            setListMatch(response.data.data);
+            apiMatchInstance
+              .get("/total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -215,7 +257,14 @@ const MatchInfo = () => {
         .get("/matches?page=" + (currentPage - 1) + "&size=" + itemPerPage)
         .then((response) => {
           setListMatch(response.data.data);
-          setTotalPage(5);
+          apiMatchInstance
+            .get("/total")
+            .then((response) => {
+              setTotalPage(Math.ceil(response.data / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
           //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
         })
         .catch((error) => {
@@ -223,7 +272,7 @@ const MatchInfo = () => {
         });
     } else {
       apiMatchInstance
-        .get("/getByName?name=" + valueSearch)
+        .get("/match/name/" + valueSearch)
         .then((response) => {
           setListMatch(response.data.data.Matches);
           setTotalPage(1);
@@ -287,6 +336,9 @@ const MatchInfo = () => {
                   <th scope="col" className="px-6 py-3">
                     Address
                   </th>
+                  <th scope="col" className="px-6 py-3">
+                    Status
+                  </th>
                   <th></th>
                 </tr>
               </thead>
@@ -309,6 +361,7 @@ const MatchInfo = () => {
 
                       <td className="px-6 py-4">{item.startTime}</td>
                       <td className="px-6 py-4">{item.place}</td>
+                      <td className="px-6 py-4">{item.status}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"

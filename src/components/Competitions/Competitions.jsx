@@ -32,6 +32,15 @@ const Competitions = () => {
 
   useEffect(() => {
     apiCompetitionInstance
+      .get("/total")
+      .then((response) => {
+        setTotalPage(Math.ceil(response.data / itemPerPage));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    apiCompetitionInstance
       .get("/competitions?page=" + (currentPage - 1) + "&size=" + itemPerPage)
       .then((response) => {
         setListCompetition(response.data.data);
@@ -79,6 +88,14 @@ const Competitions = () => {
           )
           .then((response) => {
             setListCompetition(response.data.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        apiCompetitionInstance
+          .get("/total")
+          .then((response) => {
+            setTotalPage(Math.ceil(response.data / itemPerPage));
           })
           .catch((error) => {
             console.error(error);
@@ -181,6 +198,33 @@ const Competitions = () => {
   };
 
   const handleClose = () => {
+    apiCompetitionInstance
+      .put("/competition-status/" + selectedCompetition.id)
+      .then((response) => {
+        apiCompetitionInstance
+          .get(
+            "/competitions?page=" + (currentPage - 1) + "&size=" + itemPerPage
+          )
+          .then((response) => {
+            setListCompetition(response.data.data);
+            apiCompetitionInstance
+              .get("/total")
+              .then((response) => {
+                setTotalPage(Math.ceil(response.data / itemPerPage));
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+            //setTotalPage(Math.ceil(response.data.payload.length / itemPerPage));
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     setOpenDelete(false);
   };
   const handleClickOpenAdding = () => {
@@ -195,28 +239,35 @@ const Competitions = () => {
   };
 
   const handleSearch = () => {
-    // if (valueSearch == "") {
-    //   apiCompetitionInstance
-    //     .get("/getList?page=" + (currentPage - 1) + "&size=" + itemPerPage)
-    //     .then((response) => {
-    //       setListCompetition(response.data.data);
-    //       setTotalPage(5);
-    //     })
-    //     .catch((error) => {
-    //       console.error(error);
-    //     });
-    // } else {
-    //   apiCompetitionInstance
-    //     .get("/getByName?name=" + valueSearch)
-    //     .then((response) => {
-    //       setListCompetition(response.data.data.Competitions);
-    //       setTotalPage(1);
-    //     })
-    //     .catch((error) => {
-    //       setListCompetition([]);
-    //       setTotalPage(0);
-    //     });
-    // }
+    if (valueSearch == "") {
+      apiCompetitionInstance
+        .get("/competitions?page=" + (currentPage - 1) + "&size=" + itemPerPage)
+        .then((response) => {
+          setListCompetition(response.data.data);
+          apiCompetitionInstance
+            .get("/total")
+            .then((response) => {
+              setTotalPage(Math.ceil(response.data / itemPerPage));
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else {
+      apiCompetitionInstance
+        .get("/competition/name/" + valueSearch)
+        .then((response) => {
+          setListCompetition(response.data.data.Competitions);
+          setTotalPage(1);
+        })
+        .catch((error) => {
+          setListCompetition([]);
+          setTotalPage(0);
+        });
+    }
   };
   return (
     <div className="pt-[25px] px-[25px] bg-[#F9F8FC]">
@@ -267,6 +318,9 @@ const Competitions = () => {
                   <th scope="col" className="px-6 py-3">
                     Year
                   </th>
+                  <th scope="col" className="px-6 py-3">
+                    Status
+                  </th>
 
                   <th></th>
                 </tr>
@@ -284,6 +338,7 @@ const Competitions = () => {
                       <td className="px-6 py-4">{item.description}</td>
                       <td className="px-6 py-4">{item.holdPlace}</td>
                       <td className="px-6 py-4">{item.schoolYear.year}</td>
+                      <td className="px-6 py-4">{item.status}</td>
                       <td className="px-6 py-4">
                         <RemoveCircleIcon
                           color="error"
